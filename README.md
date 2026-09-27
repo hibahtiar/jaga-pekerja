@@ -116,7 +116,7 @@ Cara cepat menemukan kalimat: di GitHub, ketik potongan kalimatnya di kotak penc
 | Nama & logo situs | `site-config.js` → `brand` | Nama "JagaPekerja" otomatis diwarnai dua (Jaga/Pekerja) seperti logo. |
 | Kantor cabang | `site-config.js` → `office` | Tampil di Kontak, footer, dan tombol "Lokasi kantor". `phone` boleh kosong (diganti Konsultasi Langsung). |
 | Konsultasi Langsung | `site-config.js` → `konsultasi` | `appsScriptUrl` (disarankan) atau `emailTujuan` (FormSubmit). Lihat bagian 11. |
-| Batas upah minimal simulasi | `site-config.js` → `simulasi.minUpahPU`, `minPenghasilanBPU` | Bawaan Rp1.500.000 per bulan. Isi `0` untuk mematikan batas. |
+| Batas upah minimal simulasi | `site-config.js` → `simulasi.minUpahPU`, `minPenghasilanBPU` | PU: Rp1.500.000 per bulan. BPU: `0` (tanpa batas). Isi `0` untuk mematikan batas. |
 | Banner foto kepala halaman | `site-config.js` → `heroImages` | Daftarkan nama setelah berkas dibuat. Lihat bagian 12. |
 | Nomor WhatsApp petugas | `site-config.js` → `contact.whatsappNumber` | Format `62812…`. Selama kosong, tombol "Chat petugas" membuka Konsultasi Langsung. |
 | Warna | `assets/css/site.css` → `:root` | `--brand` (ikon, aksen, latar besar), `--primary` (teks & tombol, lulus WCAG AA). |
@@ -275,20 +275,45 @@ Panduan visual area aman: `tools/panduan-banner-1920x1080.jpg`.
 - **Ponsel:** dipakai potongan sisi kanan 16:9 (±360 × 200 px di layar), judul di bawah foto.
 - Warna dan gaya mengikuti tema: teal/hijau muda, aksen kuning, cahaya terang.
 
-**Cara membuat & memasang:**
+**Cara cepat (tanpa Python) — satu berkas per halaman:**
+
+1. Simpan gambar sebagai JPG ukuran 1600 × 900 px, ±150 KB (mis. ekspor dari Canva, lalu kecilkan di squoosh.app).
+   Beri nama sesuai halaman, huruf kecil tanpa spasi: `beranda.jpg`, `klaim.jpg`, `bpu.jpg`, …
+2. Di GitHub: buka folder `assets/img/hero/` → **Add file → Upload files** → seret gambar → **Commit changes**.
+3. Buka `assets/js/site-config.js` → ikon pensil (Edit) → di bagian `heroImages` tambahkan satu baris per gambar:
+   ```js
+   heroImages: {
+     pu: { posisi: 'center 28%' },
+     beranda: { berkas: 'beranda.jpg' },
+     klaim:   { berkas: 'klaim.jpg' }
+   },
+   ```
+   Perhatikan koma di akhir setiap baris kecuali baris terakhir, dan tanda kutip satu `'…'`. → **Commit changes**.
+4. Tunggu 1–3 menit, buka halamannya (tekan muat ulang). Bila banner tidak muncul, nama berkas di `berkas` tidak sama
+   persis dengan nama di folder (huruf besar/kecil berpengaruh) — halaman otomatis memakai ilustrasi lama.
+
+**Cara terbaik (hasil ponsel lebih pas) — dengan Python:**
 
 ```bash
 pip install pillow                                   # sekali saja
 python3 tools/buat-hero.py sumber/klaim.png klaim    # → assets/img/hero/klaim.webp (1600×900) + klaim-m.webp (960×540)
 ```
 
-Lalu daftarkan di `site-config.js`: `heroImages: { pu:{ posisi:'center 28%' }, klaim:{} }`.
+Lalu daftarkan tanpa `berkas`: `klaim: { posisi: 'center 28%' }`.
 Opsi: `--fokus-x 0.30` (tepi kiri potongan ponsel), `--fokus-y 0.05` (tepi atas potongan ponsel), `--kualitas 66` (berkas lebih kecil).
 Target ukuran berkas: desktop ≤ 150 KB, ponsel ≤ 80 KB (contoh PU: 76 KB + 48 KB). Bila berkas gagal dimuat, halaman
 otomatis kembali ke ilustrasi SVG.
 
-Nama banner = nilai `data-art`: `beranda`, `program`, `segmen`, `pu`, `bpu`, `jakon`, `pmi`, `simulasi`, `daftar`,
-`klaim`, `administrasi`, `sipp`, `jmo`, `formulir`, `peraturan`, `kontak`, `hilang` (404).
+| Nama | Tampil di |
+|---|---|
+| `beranda` | Beranda (`index.html`) |
+| `program` · `segmen` · `simulasi` | Program · Segmen Peserta · pilihan Simulasi |
+| `pu` | Segmen Penerima Upah + Simulasi PU |
+| `bpu` | Segmen BPU + Simulasi BPU |
+| `pmi` | Segmen PMI + Simulasi PMI |
+| `jakon` | Segmen Jasa Konstruksi + pilihan jalur konstruksi di Simulasi PU |
+| `daftar` · `klaim` · `administrasi` | Pendaftaran · Panduan Klaim · Tambah/Nonaktif Pekerja |
+| `sipp` · `jmo` · `formulir` · `peraturan` · `kontak` · `hilang` | SIPP · JMO · Formulir · Peraturan · Kantor & Kontak · halaman 404 |
 
 ## 13. Keamanan
 
@@ -313,8 +338,9 @@ Nama banner = nilai `data-art`: `beranda`, `program`, `segmen`, `pu`, `bpu`, `ja
   (sebelumnya 152 px ke bawah sehingga sisa bagian lain terlihat); efek muncul-saat-digulir tidak lagi menyembunyikan konten
   di ponsel; pemilih program menempel; tab Pendaftaran 2 kolom; lembar pilihan BPU tidak memunculkan keyboard otomatis.
 - **Simulator PU & BPU didesain ulang:** isian "Rp … / bulan" besar, label **upah sebulan** dipertegas (bukan upah harian),
-  pilihan berbentuk pil, sakelar program, − / + jumlah pekerja, **perkiraan langsung** saat mengisi. Batas minimal
-  Rp1.500.000/bulan: di bawahnya muncul arahan Konsultasi Langsung atau kantor cabang (angka harian dikenali).
+  pilihan berbentuk pil, sakelar program, − / + jumlah pekerja, **perkiraan langsung** saat mengisi. Batas minimal upah
+  PU Rp1.500.000/bulan: di bawahnya muncul arahan Konsultasi Langsung atau kantor cabang (angka harian dikenali).
+  BPU tanpa batas minimal.
   Angka hasil tidak berubah dari V5 (90 kasus uji dibandingkan).
 - Slot **banner foto** kepala halaman + `tools/buat-hero.py` + spesifikasi ukuran; contoh PU terpasang.
 
