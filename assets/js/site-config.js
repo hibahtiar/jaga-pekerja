@@ -38,7 +38,7 @@ window.SITE_CONFIG = {
                          Setelah aktif, FormSubmit mengirim kode acak — boleh dipakai di sini menggantikan alamat email
                          agar alamat asli tidak terlihat di kode website. */
   konsultasi: {
-    appsScriptUrl: '',
+    appsScriptUrl: 'https://script.google.com/macros/s/AKfycbzvNeROqg5s5DgoDxEnWuNCTrdfcdjO7u6CukbFFS8ZlRon0lCuVvRpqECKPcxxZ4nwxA/exec',
     emailTujuan: 'hi.bahtiar@gmail.com',
     judul: 'Konsultasi Langsung',
     jedaDetik: 60,         // jeda minimal antar-kiriman dari browser yang sama
