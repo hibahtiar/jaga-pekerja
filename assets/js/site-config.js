@@ -59,7 +59,26 @@ window.SITE_CONFIG = {
        · hasil tools/buat-hero.py: pu: { posisi: 'center 28%' }        → pu.webp (desktop) + pu-m.webp (ponsel)
      posisi (opsional) = titik fokus gambar desktop, format CSS object-position, mis. 'center 28%' (geser ke atas: 'center 15%'). */
   heroImages: {
-    pu: { posisi: 'center 28%' }
+    /* Banner khusus segmen (pasangan desktop + ponsel dari tools/buat-hero.py) */
+    pu:    { posisi: 'center 28%' },   // pu.webp + pu-m.webp       → segmen-pu, simulasi-pu
+    bpu:   { posisi: 'center 28%' },   // bpu.webp + bpu-m.webp     → segmen-bpu, simulasi-bpu
+    jakon: { posisi: 'center 28%' },   // jakon.webp + jakon-m.webp → segmen-jakon, simulasi-pu (tab konstruksi)
+    pmi:   { posisi: 'center 28%' },   // pmi.webp + pmi-m.webp     → segmen-pmi, simulasi-pmi
+
+    /* Banner UMUM (satu berkas umum.webp) untuk semua halaman lain */
+    beranda:      { berkas: 'umum.webp', posisi: 'center 30%' },
+    program:      { berkas: 'umum.webp', posisi: 'center 30%' },
+    segmen:       { berkas: 'umum.webp', posisi: 'center 30%' },
+    simulasi:     { berkas: 'umum.webp', posisi: 'center 30%' },
+    daftar:       { berkas: 'umum.webp', posisi: 'center 30%' },
+    klaim:        { berkas: 'umum.webp', posisi: 'center 30%' },
+    administrasi: { berkas: 'umum.webp', posisi: 'center 30%' },
+    sipp:         { berkas: 'umum.webp', posisi: 'center 30%' },
+    jmo:          { berkas: 'umum.webp', posisi: 'center 30%' },
+    formulir:     { berkas: 'umum.webp', posisi: 'center 30%' },
+    peraturan:    { berkas: 'umum.webp', posisi: 'center 30%' },
+    kontak:       { berkas: 'umum.webp', posisi: 'center 30%' },
+    hilang:       { berkas: 'umum.webp', posisi: 'center 30%' }   // halaman 404
   },
 
   /* Kanal resmi (transaksi & data pribadi hanya di kanal ini) */
