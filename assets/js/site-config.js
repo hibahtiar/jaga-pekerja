@@ -46,15 +46,17 @@ window.SITE_CONFIG = {
   },
 
   /* SIMULASI — batas bawah upah/penghasilan SEBULAN yang bisa disimulasikan.
-     Di bawah nilai ini pengunjung diarahkan ke Konsultasi Langsung atau kantor cabang. */
+     Di bawah nilai ini pengunjung diarahkan ke Konsultasi Langsung atau kantor cabang. Isi 0 untuk tanpa batas. */
   simulasi: {
     minUpahPU: 1500000,
-    minPenghasilanBPU: 1500000
+    minPenghasilanBPU: 0          // 0 = tanpa batas (BPU memakai tabel resmi mulai penghasilan terendah)
   },
 
-  /* BANNER FOTO kepala halaman. Nama = nilai data-art halaman (pu, bpu, program, klaim, …).
-     Daftarkan nama di sini SETELAH kedua berkas ada: assets/img/hero/<nama>.webp (desktop) dan <nama>-m.webp (ponsel).
-     Buat keduanya dengan: python3 tools/buat-hero.py gambar-sumber.png <nama>   (spesifikasi: README bagian 12)
+  /* BANNER FOTO kepala halaman. Nama = nilai data-art halaman (beranda, program, segmen, pu, bpu, jakon, pmi,
+     simulasi, daftar, klaim, administrasi, sipp, jmo, formulir, peraturan, kontak, hilang). Panduan: README bagian 12.
+     Dua cara mendaftarkan (tulis SETELAH berkasnya diunggah ke assets/img/hero/):
+       · cara cepat, satu berkas:  klaim: { berkas: 'klaim.jpg' }      → dipakai di desktop & ponsel
+       · hasil tools/buat-hero.py: pu: { posisi: 'center 28%' }        → pu.webp (desktop) + pu-m.webp (ponsel)
      posisi (opsional) = titik fokus gambar desktop, format CSS object-position, mis. 'center 28%' (geser ke atas: 'center 15%'). */
   heroImages: {
     pu: { posisi: 'center 28%' }
