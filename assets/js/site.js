@@ -801,12 +801,13 @@
     if(!el || !name || el.classList.contains('has-art') || el.classList.contains('has-photo')) return;
     var h = SH.heroInfo(name);
     if(!h){ el.classList.add('has-art'); el.insertAdjacentHTML('beforeend', SH.art(name)); return; }
-    var base = (SH.base || '') + 'assets/img/hero/' + name;
+    var dir = (SH.base || '') + 'assets/img/hero/', base = dir + name;
     var body = document.createElement('div'); body.className = 'sh-head-body';
     while(el.firstChild) body.appendChild(el.firstChild);
-    var pic = document.createElement('picture'); pic.className = 'sh-photo';
-    pic.innerHTML = '<source media="(max-width: 699px)" srcset="' + E(base) + '-m.webp">' +
-      '<img src="' + E(base) + '.webp" alt="" width="1600" height="900" decoding="async" fetchpriority="high">';
+    var pic = document.createElement('picture'); pic.className = 'sh-photo' + (h.berkas ? ' is-single' : '');
+    // satu berkas (h.berkas) dipakai di semua layar; selain itu <nama>.webp + <nama>-m.webp dari tools/buat-hero.py
+    pic.innerHTML = (h.berkas ? '' : '<source media="(max-width: 699px)" srcset="' + E(base) + '-m.webp">') +
+      '<img src="' + E(h.berkas ? dir + h.berkas : base + '.webp') + '" alt="" width="1600" height="900" decoding="async" fetchpriority="high">';
     var img = pic.querySelector('img');
     if(h.posisi) img.style.setProperty('--pos', h.posisi);
     el.appendChild(pic); el.appendChild(body); el.classList.add('has-photo');
