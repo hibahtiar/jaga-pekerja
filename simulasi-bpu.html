@@ -1,0 +1,706 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Simulasi BPU (Pekerja Mandiri) · JagaPekerja</title>
+<meta name="description" content="Hitung iuran Bukan Penerima Upah berdasarkan pekerjaan dan penghasilan, termasuk penyesuaian iuran yang sedang berlaku.">
+<meta name="theme-color" content="#0D9488">
+<link rel="icon" href="assets/img/brand/favicon-32.png" sizes="32x32" type="image/png">
+<link rel="icon" href="assets/img/brand/icon-192.png" sizes="192x192" type="image/png">
+<link rel="apple-touch-icon" href="assets/img/brand/apple-touch-icon.png">
+<link rel="manifest" href="site.webmanifest">
+<meta name="application-name" content="JagaPekerja">
+<meta name="apple-mobile-web-app-title" content="JagaPekerja">
+<link rel="stylesheet" href="assets/css/site.css">
+
+<link rel="stylesheet" href="assets/css/simulator.css">
+<style>
+/* khusus simulator BPU (gaya bersama ada di assets/css/simulator.css) */
+.soft-notice{margin:0 0 6px;background:var(--primary-50);border-color:var(--line2);color:var(--ink2)}
+.selector-field{width:100%;display:flex;align-items:center;gap:12px;background:#fff;border:1.5px solid var(--line2);border-radius:16px;padding:10px 14px 10px 10px;text-align:left;color:var(--ink);box-shadow:none;font-weight:600;min-height:58px}
+.selector-field:hover{border-color:var(--brand-light);background:var(--primary-50)}
+.selector-field .sel-ic{flex:0 0 auto;width:38px;height:38px;border-radius:12px;background:var(--primary2);color:var(--primary);display:flex;align-items:center;justify-content:center}
+.selector-field .placeholder{flex:1;color:var(--muted);font-weight:600}
+.selector-field .value{flex:1;font-weight:800}
+.selector-field .chev{color:var(--primary);font-size:18px;margin-left:auto}
+.selector-field.field-error{border-color:var(--bad)}
+.selector-sub{margin-top:14px}
+.advanced-box{margin-top:14px}
+.advanced-box summary{cursor:pointer;color:var(--muted);font-size:13px;font-weight:700}
+.prog-tag{display:inline-block;margin-left:4px;font-size:10.5px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);background:var(--soft);border-radius:999px;padding:2px 7px;vertical-align:1px}
+.prog.is-on .prog-tag{color:var(--primary-700);background:var(--primary2)}
+#jhtOffer,#jhtSelected{margin-top:12px}
+.sheet-handle{width:44px;height:5px;border-radius:999px;background:#C6DCD8;margin:2px auto 14px}
+.sheet-head{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-bottom:12px}
+.sheet-head h3{margin:0;font:700 19px/1.3 var(--font-heading)}
+.sheet-close{background:#fff;border:1px solid var(--line);color:var(--ink);padding:8px 12px;border-radius:999px;box-shadow:none}
+.sheet-search{margin-bottom:10px}
+.sheet-list{display:grid;gap:8px}
+.sheet-item{background:#fff;border:1px solid var(--line);border-radius:14px;padding:13px 14px;text-align:left;box-shadow:none;font-weight:700}
+.sheet-item:hover{border-color:var(--brand-light);background:var(--primary-50)}
+.sheet-item strong{display:block;margin-bottom:3px}
+.sheet-item span{display:block;color:var(--muted);font-size:12.5px;font-weight:500;line-height:1.35}
+/* simulasi saldo JHT */
+.jht-sim{margin-top:12px;border:1px solid var(--line);border-radius:18px;background:#fff;overflow:hidden}
+.jht-sim-head{padding:14px 16px;border-bottom:1px solid var(--line);background:var(--surface-muted)}
+.jht-sim-head strong{display:block;font-size:15px;margin-bottom:3px}
+.jht-sim-head span{font-size:12.5px;color:var(--muted)}
+.year-pills{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:14px}
+.year-pill{background:#fff;color:var(--muted);border:1px solid var(--line);border-radius:12px;padding:10px 8px;box-shadow:none}
+.year-pill.active{background:var(--primary);color:#fff;border-color:var(--primary)}
+.jht-hero{margin:0 14px 12px;padding:16px;border-radius:16px;background:linear-gradient(135deg,var(--primary2),#D9F2EC)}
+.jht-hero span{display:block;font-size:12.5px;color:var(--muted);margin-bottom:4px}
+.jht-hero strong{display:block;font:700 28px/1.15 var(--font-heading);color:var(--primary-700)}
+.jht-metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:0 14px 14px}
+.jht-metric{border:1px solid var(--line);border-radius:14px;padding:12px;background:var(--surface-muted)}
+.jht-metric span{display:block;font-size:11.5px;color:var(--muted);line-height:1.35;margin-bottom:5px}
+.jht-metric strong{font-size:15px}
+.jht-growth{color:var(--primary)}
+.jht-formula{margin:0 14px 14px;padding:10px 12px;border-radius:12px;background:var(--soft);color:var(--muted);font-size:12px;line-height:1.5}
+@media(max-width:650px){.jht-metrics{grid-template-columns:1fr 1fr}.jht-metric:last-child{grid-column:1/-1}}
+</style>
+</head>
+<body data-page="bpu">
+<header data-sh-header></header>
+<script src="assets/js/site-config.js"></script>
+<script src="assets/js/site.js"></script>
+<div class="container" id="main">
+  <nav data-sh-crumbs></nav>
+
+  <section id="formView" class="sim-view">
+    <div class="sim-head" data-art="bpu">
+    <div class="eyebrow">Simulasi · Pekerja mandiri</div>
+    <h1>Hitung iuran BPU</h1>
+    <div class="lead">BPU mencakup sangat banyak pekerjaan mandiri dan pekerjaan di luar hubungan kerja. Pilih pekerjaan yang paling mendekati, lalu masukkan penghasilan bulanan. Sistem akan mencari tingkatan <strong>dasar penghasilan resmi</strong> yang sesuai terlebih dahulu.</div>
+    <div class="seg-switch"><a href="segmen-bpu.html">Tentang segmen pekerja mandiri (BPU)</a> · Mendaftarkan karyawan? <a href="simulasi-pu.html">Simulasi PU</a> · Bekerja ke luar negeri? <a href="simulasi-pmi.html">Simulasi PMI</a> · <a href="simulasi.html">Pilih segmen</a></div>
+    <div class="sim-help" data-sim-help>Butuh bantuan mengisi? <button type="button" class="sh-linkbtn" data-sh-konsul="Bantuan mengisi simulasi BPU">Konsultasi Langsung</button>, kami yang menghubungi.</div>
+    </div>
+    <div class="notice soft-notice">
+      <strong>Pekerjaan Anda tidak ada di daftar?</strong> Pilih yang paling dekat atau <strong>Pekerjaan mandiri lainnya</strong>. Peserta BPU aktif bekerja/berusaha sendiri dan tidak menerima upah dari pemberi kerja.
+    </div>
+
+    <div class="card">
+      <div class="section-title"><span class="num">1</span><div>Pekerjaan<small>Pilih bidang, lalu pekerjaan yang paling mendekati</small></div></div>
+      <div id="prefillNote" class="helper hidden" style="margin:-6px 0 12px;color:var(--primary);font-weight:700"></div>
+
+      <label>Bidang pekerjaan</label>
+      <button type="button" id="groupSelector" class="selector-field" onclick="openGroupSheet();clearFieldError('groupSelector','groupError')">
+        <span class="sel-ic" aria-hidden="true"></span>
+        <span id="groupSelectorText" class="placeholder">Pilih bidang pekerjaan</span>
+        <span class="chev">⌄</span>
+      </button>
+      <div id="groupError" class="error-msg">Pilih bidang pekerjaan terlebih dahulu.</div>
+
+      <div id="jobSelectorWrap" class="selector-sub hidden">
+        <label>Pekerjaan</label>
+        <button type="button" id="jobSelector" class="selector-field" onclick="openJobSheet();clearFieldError('jobSelector','jobError')">
+          <span class="sel-ic" aria-hidden="true"></span>
+          <span id="jobSelectorText" class="placeholder">Pilih pekerjaan</span>
+          <span class="chev">⌄</span>
+        </button>
+        <div id="jobError" class="error-msg">Pilih pekerjaan yang paling mendekati.</div>
+      </div>
+
+      <details class="advanced-box">
+        <summary>Opsi lanjutan</summary>
+        <label class="switchrow" style="margin-top:12px">
+          <input id="governmentPaid" type="checkbox" onchange="bpuLive()">
+          <span><strong>Iuran dibayarkan melalui APBN/APBD</strong>
+          <div class="helper">Dipakai sebagai parameter kelayakan bila suatu kebijakan mensyaratkannya.</div></span>
+        </label>
+      </details>
+    </div>
+
+    <div class="card">
+      <div class="section-title"><span class="num">2</span><div>Penghasilan sebulan<small>Menentukan dasar penghasilan resmi</small></div></div>
+      <label for="income" class="lbl">Perkiraan penghasilan <u>sebulan</u> <span class="unit-flag">per bulan</span></label>
+      <div class="money"><span class="pre">Rp</span><input id="income" inputmode="numeric" autocomplete="off" placeholder="3.200.000" aria-describedby="incomeHelp" oninput="formatMoneyInput(this);clearFieldError('income','incomeError');checkIncomeMin(false);bpuLive()" onblur="checkIncomeMin(false)"><span class="suf">/ bulan</span></div>
+      <div id="incomeError" class="error-msg">Masukkan perkiraan penghasilan sebulan.</div>
+      <div id="incomeMin" class="min-note hidden" role="status"></div>
+      <div class="helper" id="incomeHelp"><b>Bukan penghasilan harian.</b> Jumlahkan penghasilan dalam satu bulan, misalnya Rp120.000 per hari × 25 hari kerja = Rp3.000.000. Angka ini hanya dipakai untuk memilih tingkatan dasar penghasilan pada tabel resmi.</div>
+
+      <div class="count-row">
+        <label>Berapa peserta yang dihitung?</label>
+        <div class="pillset two" role="radiogroup" aria-label="Jumlah peserta">
+          <label class="pill"><input type="radio" name="bpuCount" value="single" checked onchange="setCountMode('single')"><span><b>1 peserta</b><small>Hitung per orang</small></span></label>
+          <label class="pill"><input type="radio" name="bpuCount" value="multiple" onchange="setCountMode('multiple')"><span><b>Beberapa</b><small>Kondisi sama</small></span></label>
+        </div>
+        <div id="countWrap" class="stepper-wrap hidden">
+          <label for="count">Jumlah peserta</label>
+          <div class="stepper"><button type="button" data-stepper="-1" aria-label="Kurangi jumlah peserta">−</button><input id="count" type="number" min="2" value="2" inputmode="numeric" oninput="clearFieldError('count','countError');bpuLive()"><button type="button" data-stepper="1" aria-label="Tambah jumlah peserta">+</button></div>
+        </div>
+      </div>
+      <div id="countError" class="error-msg">Jumlah peserta minimal 2 orang.</div>
+    </div>
+
+    <div class="card">
+      <div class="section-title"><span class="num">3</span><div>Program<small>JKK &amp; JKM wajib · JHT pilihan</small></div></div>
+      <div class="progs">
+        <div class="prog is-on is-locked"><span class="code">JKK</span><div class="prog-main"><b>Kecelakaan Kerja</b><small>1% dari dasar penghasilan</small></div><span class="lock">Wajib</span></div>
+        <div class="prog is-on is-locked"><span class="code">JKM</span><div class="prog-main"><b>Kematian</b><small>Rp6.800 per bulan</small></div><span class="lock">Wajib</span></div>
+        <label class="prog" id="jhtRow"><span class="code">JHT</span><div class="prog-main"><b>Hari Tua <span id="jhtStatusLabel" class="prog-tag">Pilihan</span></b><small id="jhtNote">Tabungan hari tua 2% dari dasar penghasilan</small></div><span class="lock">Wajib</span><span class="switch"><input type="checkbox" id="jht" aria-label="Ikutkan JHT"><i></i></span></label>
+      </div>
+      <div id="jhtOffer" class="smart-card">
+        <h4>Mau sekalian menyiapkan hari tua?</h4>
+        <p>Aktifkan JHT. Iuran masuk ke rekening perorangan peserta dan manfaatnya berupa akumulasi iuran ditambah hasil pengembangan.</p>
+        <div class="smart-actions"><button type="button" class="secondary" onclick="enableJHT()">+ Tambahkan JHT</button></div>
+      </div>
+      <div id="jhtSelected" class="smart-card hidden">
+        <h4>JHT sudah ditambahkan ✓</h4>
+        <p>Setelah simulasi iuran, Anda juga bisa melihat estimasi sederhana potensi saldo JHT dalam beberapa tahun.</p>
+        <div class="smart-actions"><button type="button" class="outline" onclick="disableJHT()">Hapus JHT</button></div>
+      </div>
+    </div>
+
+    <div class="live" id="bpuLive" aria-live="polite">
+      <span class="live-label"><span class="dot"></span>Perkiraan iuran per bulan</span>
+      <strong class="live-amt is-empty" id="bpuLiveAmt">Isi penghasilan sebulan</strong>
+      <span class="live-sub" id="bpuLiveSub">Perkiraan muncul otomatis.</span>
+      <div class="live-split" id="bpuLiveSplit"></div>
+      <button type="button" class="go" onclick="calculate()">Lihat rincian lengkap →</button>
+      <div class="live-note" id="bpuLiveNote">Keringanan iuran yang berlaku diperiksa otomatis sesuai pekerjaan.</div>
+    </div>
+  </section>
+
+  <section id="resultView" class="hidden sim-view">
+    <button class="backbtn" onclick="backToForm()">← Ubah data</button>
+    <div class="rs-head">
+      <div class="step-kicker">Hasil simulasi · Pekerja mandiri (BPU)</div>
+      <h1>Perkiraan iuran BPU Anda</h1>
+    </div>
+    <div id="rsBody"></div>
+
+      <details class="legal-box">
+        <summary>Dasar hukum perhitungan BPU</summary>
+        <div class="legal-content">
+          <div class="legal-item"><strong>Permenaker Nomor 5 Tahun 2021 — Pasal 31–32</strong><span>Menjelaskan siapa yang termasuk BPU: pemberi kerja, pekerja di luar hubungan kerja/pekerja mandiri termasuk kemitraan, serta pekerja bukan penerima upah. Untuk BPU pemberi kerja, JKK, JKM, dan JHT wajib.</span><br><a href="https://www.bpjsketenagakerjaan.go.id/assets/uploads/peraturan/Permenaker_Nomor_5_Tahun_2021_Tata_Cara_Penyelenggaraan_Program_JKK%2C_JKM%2C_dan_JHT.pdf" target="_blank" rel="noopener noreferrer">Buka / unduh Permenaker 5/2021 ↗</a></div>
+          <div class="legal-item"><strong>PP Nomor 44 Tahun 2015 — Lampiran II</strong><span>Tabel penghasilan, dasar penghasilan, dan iuran JKK peserta BPU.</span><br><a href="https://peraturan.bpk.go.id/Download/28929/PP%20Nomor%2044%20Tahun%202015%20-%20Lampiran%202.pdf" target="_blank" rel="noopener noreferrer">Buka / unduh Lampiran II resmi ↗</a></div>
+          <div class="legal-item"><strong>PP Nomor 46 Tahun 2015 jo. PP Nomor 60 Tahun 2015</strong><span>Dasar penyelenggaraan JHT; tabel BPU menggunakan tingkatan dasar upah/penghasilan dan iuran JHT 2%.</span><br><a href="https://peraturan.bpk.go.id/Download/28934/PP%20Nomor%2046%20Tahun%202015.pdf" target="_blank" rel="noopener noreferrer">Buka / unduh PP 46/2015 ↗</a></div>
+          <div class="legal-item"><strong>PP Nomor 50 Tahun 2025</strong><span>Contoh rule penyesuaian sementara yang dibaca oleh policy engine sesuai sektor dan periode aktif.</span><br><a href="https://peraturan.bpk.go.id/Download/402226/PP%20Nomor%2050%20Tahun%202025.pdf" target="_blank" rel="noopener noreferrer">Buka / unduh PP 50/2025 resmi ↗</a></div>
+        </div>
+      </details>
+
+    <div class="next-panel">
+      <h3>Ingin mulai terlindungi?</h3>
+      <p>Daftar melalui kanal resmi, atau tinggalkan nomor HP lewat Konsultasi Langsung bila perlu bantuan. Ringkasan simulasi ikut terkirim, tanpa data pribadi.</p>
+      <div class="next-grid">
+        <a class="go" data-link="daftarBpu" href="https://www.bpjsketenagakerjaan.go.id/bpu" target="_blank" rel="noopener noreferrer">Daftar BPU resmi ↗</a>
+        <button type="button" class="chat" onclick="openWhatsApp()">Konsultasi Langsung</button>
+      </div>
+    </div>
+
+      <div class="faq-section">
+        <h3>Yang sering ditanyakan</h3>
+        <div class="faq-intro">Jawaban singkat untuk pertanyaan yang paling sering muncul sebelum mendaftar.</div>
+
+        <details class="faq-item">
+          <summary>Apa manfaat JKK?</summary>
+          <div class="faq-answer">JKK memberikan pelayanan kesehatan sesuai kebutuhan medis dan santunan ketika peserta mengalami kecelakaan kerja atau penyakit akibat kerja. <a href="https://www.bpjsketenagakerjaan.go.id/Bukan-Penerima-Upah.html" target="_blank" rel="noopener noreferrer">Lihat manfaat resmi ↗</a></div>
+        </details>
+
+        <details class="faq-item">
+          <summary>Apa manfaat JKM?</summary>
+          <div class="faq-answer">JKM diberikan kepada ahli waris ketika peserta meninggal dunia bukan akibat kecelakaan kerja. Manfaat utamanya mencakup santunan kematian, santunan berkala, biaya pemakaman, serta beasiswa anak sesuai syarat. <a href="https://www.bpjsketenagakerjaan.go.id/Bukan-Penerima-Upah.html" target="_blank" rel="noopener noreferrer">Lihat rincian resmi ↗</a></div>
+        </details>
+
+        <details class="faq-item">
+          <summary>Apa manfaat JHT?</summary>
+          <div class="faq-answer">JHT adalah manfaat uang tunai berupa akumulasi seluruh iuran yang telah disetor ditambah hasil pengembangannya dalam rekening perorangan peserta. <a href="https://www.bpjsketenagakerjaan.go.id/artikel/18902/artikel-3-program-jaminan-untuk-peserta-bukan-penerima-upah-%28bpu%29.bpjs" target="_blank" rel="noopener noreferrer">Pelajari JHT BPU ↗</a></div>
+        </details>
+
+        <details class="faq-item">
+          <summary>Apakah JHT wajib untuk peserta BPU?</summary>
+          <div class="faq-answer">Untuk BPU, JKK dan JKM merupakan program wajib, sedangkan JHT dapat diikuti secara sukarela untuk perlindungan hari tua yang lebih lengkap. <a href="https://www.bpjsketenagakerjaan.go.id/Bukan-Penerima-Upah.html" target="_blank" rel="noopener noreferrer">Sumber resmi ↗</a></div>
+        </details>
+
+        <details class="faq-item">
+          <summary>Pekerjaan saya tidak ada di daftar. Apakah tetap bisa menjadi peserta BPU?</summary>
+          <div class="faq-answer">Daftar pekerjaan di simulator hanya contoh untuk memudahkan pencarian, bukan daftar tertutup. BPU mencakup pemberi kerja, pekerja mandiri, pekerja di luar hubungan kerja/kemitraan, dan pekerja lain yang bukan penerima upah. Yang penting calon peserta aktif bekerja atau menjalankan kegiatan usaha. Pilih pekerjaan yang paling mendekati atau gunakan “Pekerjaan mandiri lainnya”.</div>
+        </details>
+
+        <details class="faq-item">
+          <summary>Apakah guru ngaji, imam, marbot, tukang, petani, dan pekerja serabutan bisa ikut?</summary>
+          <div class="faq-answer">Bisa masuk kategori BPU sepanjang konteks pekerjaannya memang bukan sebagai penerima upah dalam hubungan kerja formal dan peserta aktif melakukan pekerjaan/kegiatan tersebut. Bila seseorang bekerja sebagai karyawan yang menerima upah dari pemberi kerja, jalurnya dapat berbeda dan perlu dilihat sebagai PU.</div>
+        </details>
+
+        <details class="faq-item">
+          <summary>Kenapa dasar penghasilan berbeda dari penghasilan yang saya masukkan?</summary>
+          <div class="faq-answer">Penghasilan bulanan digunakan untuk menentukan rentang pada tabel resmi. Iuran kemudian dihitung menggunakan dasar penghasilan yang ditetapkan untuk rentang tersebut, bukan langsung dari setiap rupiah penghasilan aktual.</div>
+        </details>
+      </div>
+    <p class="page-footnote">Hasil simulasi adalah perkiraan untuk persiapan, bukan tagihan resmi. Besaran resmi mengikuti ketentuan dan tagihan dari kanal resmi BPJS Ketenagakerjaan.</p>
+  </section>
+</div>
+
+
+<div id="selectorSheet" class="sheet-backdrop" onclick="closeSelectorSheet(event)">
+  <div class="bottom-sheet" onclick="event.stopPropagation()">
+    <div class="sheet-handle"></div>
+    <div class="sheet-head">
+      <h3 id="sheetTitle">Pilih</h3>
+      <button type="button" class="sheet-close" onclick="closeSelectorSheet()">Tutup</button>
+    </div>
+    <div class="sheet-search">
+      <input id="sheetSearch" aria-label="Cari pekerjaan" placeholder="Cari..." oninput="filterSheetItems()">
+    </div>
+    <div id="sheetList" class="sheet-list"></div>
+  </div>
+</div>
+
+<script src="data/bpu-pekerjaan.js"></script>
+<script src="assets/js/sim-report.js"></script>
+<script>
+const POLICY_REGISTRY={"metadata": {"schema_version": "1.0", "segment": "BPU", "last_verified": "2026-09-24", "note": "Registry kebijakan penyesuaian iuran. Tambahkan rule baru ketika regulasi baru terbit."}, "policies": [{"id": "PP50-2025-BPU-TRANSPORT", "status": "active_rule", "regulation": "PP Nomor 50 Tahun 2025", "title": "Penyesuaian Iuran Jaminan Kecelakaan Kerja dan Jaminan Kematian bagi Peserta Bukan Penerima Upah", "segment": "BPU", "sector": "transport", "valid_from": "2026-01-01", "valid_to": "2027-03-31", "programs": {"JKK": {"type": "multiplier", "value": 0.5}, "JKM": {"type": "multiplier", "value": 0.5}}, "source_pdf": "https://peraturan.bpk.go.id/Download/402226/PP%20Nomor%2050%20Tahun%202025.pdf", "source_page": "https://peraturan.bpk.go.id/Details/339151/pp-no-50-tahun-2025", "eligibility": {"government_paid": false}}, {"id": "PP50-2025-BPU-NONTRANSPORT", "status": "active_rule", "regulation": "PP Nomor 50 Tahun 2025", "title": "Penyesuaian Iuran Jaminan Kecelakaan Kerja dan Jaminan Kematian bagi Peserta Bukan Penerima Upah", "segment": "BPU", "sector": "other", "valid_from": "2026-04-01", "valid_to": "2026-12-31", "programs": {"JKK": {"type": "multiplier", "value": 0.5}, "JKM": {"type": "multiplier", "value": 0.5}}, "source_pdf": "https://peraturan.bpk.go.id/Download/402226/PP%20Nomor%2050%20Tahun%202025.pdf", "source_page": "https://peraturan.bpk.go.id/Details/339151/pp-no-50-tahun-2025", "eligibility": {"government_paid": false}}]};
+const TIERS=[{min:0,max:1099000,base:1000000},{min:1100000,max:1299000,base:1200000},{min:1300000,max:1499000,base:1400000},{min:1500000,max:1699000,base:1600000},{min:1700000,max:1899000,base:1800000},{min:1900000,max:2099000,base:2000000},{min:2100000,max:2299000,base:2200000},{min:2300000,max:2499000,base:2400000},{min:2500000,max:2699000,base:2600000},{min:2700000,max:3199000,base:2950000},{min:3200000,max:3699000,base:3450000},{min:3700000,max:4199000,base:3950000},{min:4200000,max:4699000,base:4450000},{min:4700000,max:5199000,base:4950000},{min:5200000,max:5699000,base:5450000},{min:5700000,max:6199000,base:5950000},{min:6200000,max:6699000,base:6450000},{min:6700000,max:7199000,base:6950000},{min:7200000,max:7699000,base:7450000},{min:7700000,max:8199000,base:7950000},{min:8200000,max:9199000,base:8700000},{min:9200000,max:10199000,base:9700000},{min:10200000,max:11199000,base:10700000},{min:11200000,max:12199000,base:11700000},{min:12200000,max:13199000,base:12700000},{min:13200000,max:14199000,base:13700000},{min:14200000,max:15199000,base:14700000},{min:15200000,max:16199000,base:15700000},{min:16200000,max:17199000,base:16700000},{min:17200000,max:18199000,base:17700000},{min:18200000,max:19199000,base:18700000},{min:19200000,max:20199000,base:19700000},{min:20200000,max:null,base:20700000}];
+const CFG={jkm:6800,jkkRate:0.01,jhtRate:0.02,
+  /* batas bawah penghasilan SEBULAN yang bisa disimulasikan — assets/js/site-config.js (simulasi.minPenghasilanBPU) */
+  minIncome:((window.SITE_CONFIG||{}).simulasi||{}).minPenghasilanBPU||0};
+let last=null,currentMode='person',countMode='single';
+
+function rupiah(n){return new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR',maximumFractionDigits:0}).format(Math.round(n))}
+function parseMoney(v){return Number(String(v).replace(/[^\d]/g,''))||0}
+function formatMoneyInput(el){const n=parseMoney(el.value);el.value=n?new Intl.NumberFormat('id-ID').format(n):''}
+
+/* Daftar pekerjaan: data/bpu-pekerjaan.js (satu sumber untuk simulator & pencarian beranda) */
+const OCCUPATION_GROUPS=(window.BPU_PEKERJAAN||{groups:[]}).groups.map(g=>({id:g.id,title:g.title,desc:g.desc,policySector:g.policySector,jobs:g.jobs.map(j=>j.label),jobIds:g.jobs.map(j=>j.id)}));
+
+let selectedOccupationGroup=null;
+let selectedOccupation='';
+let selectedJobId='';
+function clearFieldError(fieldId,errorId){
+  const field=document.getElementById(fieldId);
+  const err=document.getElementById(errorId);
+  if(field){field.classList.remove('field-error');const m=field.closest('.money');if(m)m.classList.remove('field-error');}
+  if(err) err.classList.remove('show');
+}
+function markFieldError(fieldId,errorId){
+  const field=document.getElementById(fieldId);
+  const err=document.getElementById(errorId);
+  if(field){field.classList.add('field-error');const m=field.closest('.money');if(m)m.classList.add('field-error');}
+  if(err) err.classList.add('show');
+}
+function esc(s){return SH.esc(s);}
+/* pilihan pil: kelas .is-on untuk browser lama */
+function syncPills(root){(root||document).querySelectorAll('.pill input').forEach(i=>i.closest('.pill').classList.toggle('is-on',i.checked));}
+/* ---------- batas penghasilan minimal: di bawahnya → Konsultasi Langsung / kantor cabang ---------- */
+function checkIncomeMin(force){
+  const inp=document.getElementById('income'),n=parseMoney(inp.value),box=document.getElementById('incomeMin');
+  const low=CFG.minIncome&&n>0&&n<CFG.minIncome;
+  if(low&&(force||!box.classList.contains('hidden')||document.activeElement!==inp)){
+    const daily=n<500000;
+    box.innerHTML=`<strong>${SH.icon('alert','sm')}<span>Penghasilan sebulan di bawah ${rupiah(CFG.minIncome)} belum dapat disimulasikan.</span></strong>`+
+      (daily?`<span>Angka ini seperti penghasilan <b>harian</b>. Isi penghasilan <b>sebulan</b>: penghasilan per hari × jumlah hari kerja dalam sebulan.</span>`:'')+
+      `<span>Untuk konsultasi nilai penghasilan/upah, hubungi petugas atau datang ke kantor cabang terdekat.</span>`+
+      `<div class="min-actions"><button type="button" class="primary" data-sh-konsul="Konsultasi nilai penghasilan — simulasi BPU${selectedOccupation?', pekerjaan '+esc(selectedOccupation):''}, penghasilan dimasukkan ${esc(rupiah(n))}/bulan">${SH.icon('headset','sm')}Konsultasi Langsung</button><a href="${SH.url('kontak',null,'kantor')}">${SH.icon('pin','sm')}${esc(SH.officeShort())}</a></div>`;
+    box.classList.remove('hidden');
+  } else if(!low){ box.classList.add('hidden'); }
+  return !low;
+}
+function validateForm(){
+  let first=null;
+  if(!selectedOccupationGroup){
+    markFieldError('groupSelector','groupError');
+    first=first||document.getElementById('groupSelector');
+  }
+  if(selectedOccupationGroup && !selectedOccupation){
+    markFieldError('jobSelector','jobError');
+    first=first||document.getElementById('jobSelector');
+  }
+  const income=parseMoney(document.getElementById('income').value);
+  if(income<=0){
+    markFieldError('income','incomeError');
+    first=first||document.getElementById('income');
+  } else if(!checkIncomeMin(true)){
+    first=first||document.getElementById('incomeMin');
+  }
+  if(countMode==='multiple'){
+    const count=Number(document.getElementById('count').value||0);
+    if(count<2){
+      markFieldError('count','countError');
+      first=first||document.getElementById('count');
+    }
+  }
+  if(first){
+    first.scrollIntoView({behavior:'smooth',block:'center'});
+    if(first.focus && first.tagName==='INPUT') setTimeout(()=>first.focus(),350);
+    return false;
+  }
+  return true;
+}
+
+let sheetMode='group';
+let sheetItems=[];
+
+function openGroupSheet(){
+  sheetMode='group';
+  sheetItems=OCCUPATION_GROUPS.map(g=>({
+    id:g.id,
+    title:g.title,
+    desc:g.desc
+  }));
+  openSelectorSheet('Pilih bidang pekerjaan');
+}
+function openJobSheet(){
+  if(!selectedOccupationGroup)return;
+  sheetMode='job';
+  sheetItems=selectedOccupationGroup.jobs.map((job,i)=>({
+    id:String(i),
+    title:job,
+    desc:selectedOccupationGroup.title
+  }));
+  openSelectorSheet('Pilih pekerjaan');
+}
+function openSelectorSheet(title){
+  document.getElementById('sheetTitle').textContent=title;
+  document.getElementById('sheetSearch').value='';
+  renderSheetItems(sheetItems);
+  document.getElementById('selectorSheet').classList.add('open');document.body.classList.add('sh-no-scroll');
+  // di layar sentuh jangan langsung fokus ke kotak cari: keyboard akan menutupi daftar pilihan
+  if(!SH.touch) setTimeout(()=>document.getElementById('sheetSearch').focus(),120);
+}
+function closeSelectorSheet(e){
+  if(e && e.target!==document.getElementById('selectorSheet'))return;
+  document.getElementById('selectorSheet').classList.remove('open');document.body.classList.remove('sh-no-scroll');
+}
+function filterSheetItems(){
+  const q=document.getElementById('sheetSearch').value.toLowerCase().trim();
+  const filtered=!q?sheetItems:sheetItems.filter(x=>
+    x.title.toLowerCase().includes(q) || (x.desc||'').toLowerCase().includes(q)
+  );
+  renderSheetItems(filtered);
+}
+function renderSheetItems(items){
+  document.getElementById('sheetList').innerHTML=items.map(x=>`
+    <button type="button" class="sheet-item" onclick="pickSheetItem('${x.id}')">
+      <strong>${x.title}</strong><span>${x.desc||''}</span>
+    </button>`).join('');
+}
+function pickSheetItem(id){
+  if(sheetMode==='group'){
+    selectedOccupationGroup=OCCUPATION_GROUPS.find(g=>g.id===id);
+    selectedOccupation='';selectedJobId='';
+    clearFieldError('groupSelector','groupError');
+    const gtxt=document.getElementById('groupSelectorText');
+    gtxt.textContent=selectedOccupationGroup.title;
+    gtxt.className='value';
+    const jwrap=document.getElementById('jobSelectorWrap');
+    jwrap.classList.remove('hidden');
+    const jtxt=document.getElementById('jobSelectorText');
+    jtxt.textContent='Pilih pekerjaan';
+    jtxt.className='placeholder';
+  }else{
+    selectedOccupation=selectedOccupationGroup.jobs[Number(id)];
+    selectedJobId=selectedOccupationGroup.jobIds[Number(id)]||'';
+    clearFieldError('jobSelector','jobError');
+    const jtxt=document.getElementById('jobSelectorText');
+    jtxt.textContent=selectedOccupation;
+    jtxt.className='value';
+    applyOccupationProgramRules();
+  }
+  document.getElementById('selectorSheet').classList.remove('open');document.body.classList.remove('sh-no-scroll');
+  bpuLive();
+}
+
+function isBpuEmployerOccupation(){
+  return selectedOccupation==='Pemilik usaha / pengusaha';
+}
+
+function applyOccupationProgramRules(){
+  const owner=isBpuEmployerOccupation(),row=document.getElementById('jhtRow'),jht=document.getElementById('jht');
+  const sel=document.getElementById('jhtSelected'),removeBtn=sel.querySelector('button');
+  if(owner){
+    enableJHT();
+    jht.disabled=true;row.classList.add('is-locked');
+    document.getElementById('jhtStatusLabel').textContent='Wajib';
+    document.getElementById('jhtNote').textContent='Wajib untuk BPU pemberi kerja / pemilik usaha';
+    sel.querySelector('h4').textContent='JHT termasuk program wajib ✓';
+    sel.querySelector('p').textContent='Untuk BPU yang berstatus pemberi kerja/pemilik usaha, JKK, JKM, dan JHT merupakan program wajib.';
+    removeBtn.classList.add('hidden');
+  }else{
+    jht.disabled=false;row.classList.remove('is-locked');
+    document.getElementById('jhtNote').textContent='Tabungan hari tua 2% dari dasar penghasilan';
+    removeBtn.classList.remove('hidden');
+    if(jht.checked){
+      document.getElementById('jhtStatusLabel').textContent='Dipilih';
+      sel.querySelector('h4').textContent='JHT sudah ditambahkan ✓';
+      sel.querySelector('p').textContent='Setelah simulasi iuran, Anda juga bisa melihat estimasi sederhana potensi saldo JHT dalam beberapa tahun.';
+    }else{
+      document.getElementById('jhtStatusLabel').textContent='Pilihan';
+    }
+  }
+  row.classList.toggle('is-on',jht.checked);
+  bpuLive();
+}
+
+function enableJHT(){
+  document.getElementById('jht').checked=true;
+  document.getElementById('jhtStatusLabel').textContent=isBpuEmployerOccupation()?'Wajib':'Dipilih';
+  document.getElementById('jhtRow').classList.add('is-on');
+  document.getElementById('jhtOffer').classList.add('hidden');
+  document.getElementById('jhtSelected').classList.remove('hidden');
+  bpuLive();
+}
+function disableJHT(){
+  if(isBpuEmployerOccupation()){document.getElementById('jht').checked=true;return;}
+  document.getElementById('jht').checked=false;
+  document.getElementById('jhtStatusLabel').textContent='Pilihan';
+  document.getElementById('jhtRow').classList.remove('is-on');
+  document.getElementById('jhtSelected').classList.add('hidden');
+  document.getElementById('jhtOffer').classList.remove('hidden');
+  bpuLive();
+}
+function toggleJhtProjection(){
+  document.getElementById('jhtProjectionBox').classList.toggle('hidden');
+  renderJhtProjection();
+}
+function setJhtYears(years){
+  document.getElementById('jhtYears').value=years;
+  [5,10,20].forEach(y=>{
+    document.getElementById(`jhtYear${y}`).classList.toggle('active',y===years);
+  });
+  renderJhtProjection();
+}
+
+function renderJhtProjection(){
+  if(!last || !last.withJht)return;
+  const years=Number(document.getElementById('jhtYears').value||10);
+  const monthly=last.jht;
+  const months=years*12;
+  const annualRate=0.05;
+  const monthlyRate=Math.pow(1+annualRate,1/12)-1;
+
+  const future=monthly*((Math.pow(1+monthlyRate,months)-1)/monthlyRate);
+  const principal=monthly*months;
+  const growth=Math.max(0,future-principal);
+  const growthPct=principal>0?(growth/principal)*100:0;
+
+  document.getElementById('jhtPrincipal').textContent=rupiah(principal);
+  document.getElementById('jhtGrowth').textContent=rupiah(growth);
+  document.getElementById('jhtGrowthPct').textContent=
+    new Intl.NumberFormat('id-ID',{maximumFractionDigits:1}).format(growthPct)+'%';
+  document.getElementById('jhtFuture').textContent=rupiah(future);
+}
+
+function setCountMode(mode){
+  countMode=mode;
+  document.querySelectorAll('input[name="bpuCount"]').forEach(r=>{r.checked=r.value===mode;});
+  syncPills(document.getElementById('formView'));
+  document.getElementById('countWrap').classList.toggle('hidden',mode!=='multiple');
+  if(mode==='single') document.getElementById('count').value=1;
+  else if(+document.getElementById('count').value<2) document.getElementById('count').value=2;
+  bpuLive();
+}
+
+
+function findTier(income){return TIERS.find(t=>income>=t.min&&(t.max===null||income<=t.max))}
+function formatRange(t){if(t.min===0)return `Sampai dengan ${rupiah(t.max)}`;if(t.max===null)return `${rupiah(t.min)} dan seterusnya`;return `${rupiah(t.min)} – ${rupiah(t.max)}`}
+function localDateYMD(){
+  const d=new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+function isoToDate(s){
+  const [y,m,d]=s.split('-').map(Number);
+  return new Date(y,m-1,d);
+}
+function dateInPolicy(todayIso,p){
+  const t=isoToDate(todayIso);
+  return t>=isoToDate(p.valid_from)&&t<=isoToDate(p.valid_to);
+}
+function findActivePolicy(context){
+  const today=localDateYMD();
+  return POLICY_REGISTRY.policies.find(p=>{
+    if(p.status!=='active_rule' || p.segment!=='BPU') return false;
+    if(p.sector!==context.policySector) return false;
+    if(!dateInPolicy(today,p)) return false;
+    if(p.eligibility && typeof p.eligibility.government_paid==='boolean'){
+      if(context.govPaid!==p.eligibility.government_paid) return false;
+    }
+    return true;
+  })||null;
+}
+function applyAdjustment(amount, rule){
+  if(!rule)return amount;
+  if(rule.type==='multiplier')return amount*rule.value;
+  if(rule.type==='fixed')return rule.value;
+  if(rule.type==='subtract')return Math.max(0,amount-rule.value);
+  return amount;
+}
+function fmtDateID(iso){
+  const d=isoToDate(iso);
+  return new Intl.DateTimeFormat('id-ID',{day:'numeric',month:'long',year:'numeric'}).format(d);
+}
+/* hitung tanpa menampilkan (dipakai perkiraan langsung & tombol rincian) */
+function computeBpu(income,count){
+  const tier=findTier(income);
+  if(!tier) return null;
+  const policySector=selectedOccupationGroup?selectedOccupationGroup.policySector:null;
+  const govPaid=document.getElementById('governmentPaid').checked;
+  const withJht=document.getElementById('jht').checked;
+  const normalJkk=tier.base*CFG.jkkRate;
+  const normalJkm=CFG.jkm;
+  const jht=withJht?tier.base*CFG.jhtRate:0;
+  const r={
+    income,tier,policySector,occupation:selectedOccupation,occupationGroup:selectedOccupationGroup?selectedOccupationGroup.title:'',
+    govPaid,count,withJht,
+    normalJkk,normalJkm,jht,
+    policyChecked:true,activePolicy:null,
+    adjustedJkk:normalJkk,adjustedJkm:normalJkm
+  };
+  // Pemeriksaan kebijakan otomatis (wajib): keringanan iuran yang berlaku hari ini untuk sektor pekerjaan ini.
+  const policy=policySector?findActivePolicy(r):null;
+  r.activePolicy=policy;
+  if(policy){
+    r.adjustedJkk=applyAdjustment(normalJkk,policy.programs.JKK);
+    r.adjustedJkm=applyAdjustment(normalJkm,policy.programs.JKM);
+  }
+  return r;
+}
+function bpuCount(){return countMode==='multiple'?Math.max(2,parseInt(document.getElementById('count').value||'2',10)):1;}
+function calculate(){
+  if(!validateForm()) return;
+  const income=parseMoney(document.getElementById('income').value);
+  const r=computeBpu(income,bpuCount());
+  if(!r){
+    markFieldError('income','incomeError');
+    document.getElementById('incomeError').textContent='Penghasilan belum masuk ke rentang tabel yang tersedia.';
+    return;
+  }
+  last=r;
+  showFinalResult();
+}
+/* ---------- perkiraan langsung ---------- */
+let bpuLiveLast=null;
+function bpuLive(){
+  const amt=document.getElementById('bpuLiveAmt');if(!amt) return;
+  const sub=document.getElementById('bpuLiveSub'),split=document.getElementById('bpuLiveSplit'),note=document.getElementById('bpuLiveNote');
+  const income=parseMoney(document.getElementById('income').value),n=bpuCount();
+  if(!income||(CFG.minIncome&&income<CFG.minIncome)){
+    amt.textContent=income?'Penghasilan terlalu kecil':'Isi penghasilan sebulan';amt.classList.add('is-empty');
+    sub.textContent=CFG.minIncome?`Perkiraan muncul otomatis. Minimal ${rupiah(CFG.minIncome)} per bulan.`:'Perkiraan muncul otomatis.';
+    split.innerHTML='';bpuLiveLast=null;return;
+  }
+  const r=computeBpu(income,n);if(!r) return;
+  const p=r.activePolicy,jkk=p?r.adjustedJkk:r.normalJkk,jkm=p?r.adjustedJkm:r.normalJkm,per=jkk+jkm+r.jht,total=per*n;
+  amt.classList.remove('is-empty');
+  if(bpuLiveLast!==total){amt.textContent=rupiah(total);amt.classList.remove('bump');void amt.offsetWidth;amt.classList.add('bump');bpuLiveLast=total;}
+  sub.textContent=`${n>1?n+' peserta · '+rupiah(per)+' per peserta · ':''}dasar penghasilan ${rupiah(r.tier.base)} · ${r.withJht?'JKK, JKM, JHT':'JKK, JKM'}`;
+  split.innerHTML=`<span>JKK <b>${rupiah(jkk*n)}</b></span><span>JKM <b>${rupiah(jkm*n)}</b></span>`+(r.withJht?`<span>JHT <b>${rupiah(r.jht*n)}</b></span>`:'');
+  note.textContent=!selectedOccupationGroup?'Pilih pekerjaan agar keringanan iuran yang berlaku ikut diperiksa.':(p?`Sudah termasuk keringanan ${p.regulation} (JKK & JKM ${ruleText(p.programs.JKK)}).`:'Tarif normal: tidak ada keringanan yang cocok untuk pekerjaan ini hari ini.');
+}
+
+function showFinalResult(){
+  if(!last)return;
+  SHR.render(document.getElementById('rsBody'),buildModel());
+  document.getElementById('formView').classList.add('hidden');
+  document.getElementById('resultView').classList.remove('hidden');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function ruleText(rule){
+  if(!rule)return '';
+  if(rule.type==='multiplier')return `dipotong ${Math.round((1-rule.value)*100)}%`;
+  if(rule.type==='fixed')return `menjadi ${rupiah(rule.value)}`;
+  if(rule.type==='subtract')return `dikurangi ${rupiah(rule.value)}`;
+  return 'disesuaikan';
+}
+
+/* Satu model hasil → tampilan layar, cetak, PDF, dan teks bagikan (assets/js/sim-report.js) */
+function buildModel(){
+  const p=last.activePolicy,n=last.count;
+  const jkk=p?last.adjustedJkk:last.normalJkk, jkm=p?last.adjustedJkm:last.normalJkm;
+  const per=jkk+jkm+last.jht, normalPer=last.normalJkk+last.normalJkm+last.jht;
+  const unit='per peserta / bulan', tl=n>1?`${n} peserta`:'';
+  const prog=[
+    {kode:'JKK',nama:'Jaminan Kecelakaan Kerja',ket:'1% dari dasar penghasilan'+(p?` · ${ruleText(p.programs.JKK)} (${p.regulation})`:''),nilai:jkk,coret:p?last.normalJkk:null,unit,total:n>1?jkk*n:null,totalLabel:tl},
+    {kode:'JKM',nama:'Jaminan Kematian',ket:'Rp6.800 per peserta'+(p?` · ${ruleText(p.programs.JKM)} (${p.regulation})`:''),nilai:jkm,coret:p?last.normalJkm:null,unit,total:n>1?jkm*n:null,totalLabel:tl}
+  ];
+  if(last.withJht)prog.push({kode:'JHT',nama:'Jaminan Hari Tua',ket:isBpuEmployerOccupation()?'2% dari dasar penghasilan · wajib untuk pemilik usaha':'2% dari dasar penghasilan · tabungan hari tua',nilai:last.jht,unit,total:n>1?last.jht*n:null,totalLabel:tl});
+  const masukan=[['Pekerjaan',last.occupation],['Bidang pekerjaan',last.occupationGroup],['Penghasilan sebulan',rupiah(last.income)+' / bulan'],['Rentang pada tabel resmi',formatRange(last.tier)],['Dasar penghasilan resmi',rupiah(last.tier.base)],['Jumlah peserta',n>1?`${n} orang (kondisi sama)`:'1 orang'],['Program',last.withJht?'JKK, JKM, JHT':'JKK, JKM']];
+  if(last.govPaid)masukan.push(['Iuran dibayar APBN/APBD','Ya']);
+  const catatan=['Iuran dihitung dari dasar penghasilan resmi untuk rentang penghasilan Anda, bukan dari angka penghasilan persis.'];
+  if(!last.withJht)catatan.push('JHT belum dipilih. Bila ditambahkan, iurannya 2% dari dasar penghasilan dan menjadi tabungan hari tua.');
+  const dasar=['Permenaker Nomor 5 Tahun 2021 (Pasal 31–32) — cakupan peserta BPU','PP Nomor 44 Tahun 2015 Lampiran II — tabel dasar penghasilan dan iuran JKK BPU','PP Nomor 46 Tahun 2015 jo. PP Nomor 60 Tahun 2015 — iuran JHT 2%'];
+  if(p)dasar.push(`${p.regulation} — ${p.title}`);
+  const u=location.href.split(/[?#]/)[0]+(selectedJobId?'?pekerjaan='+encodeURIComponent(selectedJobId):'');
+  return {
+    kode:'BPU',segmen:'Bukan Penerima Upah (BPU)',berkas:'simulasi-iuran-bpu',
+    label:n>1?`Total iuran per bulan · ${n} peserta`:'Iuran per bulan',
+    total:per*n,totalCoret:p?normalPer*n:null,
+    sub:n>1?`${rupiah(per)} per peserta setiap bulan`:'untuk 1 peserta',
+    split:[{label:'JKK',nilai:jkk*n},{label:'JKM',nilai:jkm*n}].concat(last.withJht?[{label:'JHT',nilai:last.jht*n}]:[]),
+    banner:p
+      ?{nada:'ok',judul:`Ada keringanan iuran: ${p.regulation}`,teks:`Iuran JKK dan JKM untuk pekerjaan ini disesuaikan sampai ${fmtDateID(p.valid_to)}. Hemat ${rupiah(normalPer-per)} per peserta setiap bulan dibanding tarif normal.`,tautan:{label:'Lihat PDF resmi',url:p.source_pdf}}
+      :{nada:'info',judul:'Tarif normal',teks:`Tidak ada keringanan iuran yang cocok untuk pekerjaan ini pada tanggal simulasi. Daftar kebijakan terakhir diperiksa ${fmtDateID(POLICY_REGISTRY.metadata.last_verified)}.`},
+    masukan,program:prog,
+    programTotal:{label:n>1?`Total ${n} peserta`:'Total per peserta',nilai:per*n,unit:'per bulan'},
+    catatan,dasar,tautan:u,ubah:backToForm,
+    extraHtml:last.withJht?jhtProjectionHtml():''
+  };
+}
+
+function jhtProjectionHtml(){
+  return `<div class="smart-card" style="margin-top:14px">
+    <h4>Lihat potensi saldo JHT</h4>
+    <p>Ilustrasi sederhana akumulasi iuran JHT dalam jangka panjang. Ini estimasi, bukan janji hasil investasi.</p>
+    <div class="smart-actions"><button type="button" class="secondary" onclick="toggleJhtProjection()">Simulasikan saldo JHT</button></div>
+    <div id="jhtProjectionBox" class="hidden">
+      <div class="jht-sim">
+        <div class="jht-sim-head"><strong>Simulasi pertumbuhan saldo JHT</strong><span>Pilih jangka waktu untuk melihat ilustrasi akumulasi iuran dan hasil pengembangan.</span></div>
+        <div class="year-pills">
+          <button type="button" id="jhtYear5" class="year-pill" onclick="setJhtYears(5)">5 tahun</button>
+          <button type="button" id="jhtYear10" class="year-pill active" onclick="setJhtYears(10)">10 tahun</button>
+          <button type="button" id="jhtYear20" class="year-pill" onclick="setJhtYears(20)">20 tahun</button>
+        </div>
+        <input id="jhtYears" type="hidden" value="10">
+        <div class="jht-hero"><span>Estimasi saldo akhir</span><strong id="jhtFuture">Rp0</strong></div>
+        <div class="jht-metrics">
+          <div class="jht-metric"><span>Total setoran JHT</span><strong id="jhtPrincipal">Rp0</strong></div>
+          <div class="jht-metric"><span>Total hasil pengembangan</span><strong id="jhtGrowth" class="jht-growth">Rp0</strong></div>
+          <div class="jht-metric"><span>Pengembangan dibanding total setoran</span><strong id="jhtGrowthPct" class="jht-growth">0%</strong></div>
+        </div>
+        <div class="jht-formula">Asumsi ilustrasi: hasil pengembangan 5% per tahun dan iuran bulanan tetap. Persentase pengembangan dihitung dari <strong>total hasil pengembangan ÷ total setoran × 100%</strong>. Hasil aktual dapat berbeda.</div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function backToForm(){
+  document.getElementById('resultView').classList.add('hidden');
+  document.getElementById('formView').classList.remove('hidden');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function showForm(){backToForm()}
+function openWhatsApp(){
+  const m=SHR.last||buildModel();
+  SH.openWhatsApp(`Halo Pak/Bu, saya sudah mencoba simulasi BPU. Pekerjaan saya ${last.occupation}, penghasilan ${rupiah(last.income)}, dasar penghasilan ${rupiah(last.tier.base)}, estimasi iuran ${rupiah(m.total)} per bulan. Saya ingin dibantu pendaftaran/konsultasi.`);
+}
+setCountMode('single');
+/* ikon pada tombol pemilih, sakelar JHT, dan tombol − / + jumlah peserta */
+document.querySelectorAll('#groupSelector .sel-ic').forEach(x=>x.innerHTML=SH.icon('layers','sm'));
+document.querySelectorAll('#jobSelector .sel-ic').forEach(x=>x.innerHTML=SH.icon('user','sm'));
+document.getElementById('jht').addEventListener('change',e=>{if(e.target.checked)enableJHT();else disableJHT();applyOccupationProgramRules();});
+document.getElementById('formView').addEventListener('click',e=>{
+  const b=e.target.closest('[data-stepper]');if(!b) return;
+  const c=document.getElementById('count');c.value=Math.max(2,Math.min(9999,(parseInt(c.value||'2',10)||2)+Number(b.dataset.stepper)));clearFieldError('count','countError');bpuLive();
+});
+document.getElementById('count').addEventListener('blur',e=>{if(countMode==='multiple'&&(parseInt(e.target.value||'0',10)||0)<2){e.target.value=2;bpuLive();}});
+document.querySelectorAll('.next-grid .chat').forEach(b=>{b.textContent=SH.hasWhatsApp()?'Chat Petugas (WhatsApp)':'Konsultasi Langsung';});
+/* Deep link: simulasi-bpu.html?pekerjaan=<id> (lihat data/bpu-pekerjaan.js) */
+(function(){
+  const pid=SH.param('pekerjaan'); if(!pid) return;
+  for(const g of OCCUPATION_GROUPS){
+    const i=g.jobIds.indexOf(pid); if(i<0) continue;
+    sheetMode='group'; pickSheetItem(g.id); sheetMode='job'; pickSheetItem(String(i));
+    const box=document.getElementById('prefillNote');
+    if(box){box.textContent='Pekerjaan sudah dipilih dari pencarian: '+g.jobs[i]+'. Anda tetap bisa menggantinya.';box.classList.remove('hidden');}
+    break;
+  }
+})();
+</script>
+
+<footer data-sh-footer></footer>
+<script>SH.crumbs([{label:'Simulasi', href:SH.url('simulasi')},{label:'BPU (pekerja mandiri)'}]);</script>
+</body>
+</html>

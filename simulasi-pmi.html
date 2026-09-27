@@ -1,0 +1,441 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Simulasi PMI (Pekerja Migran Indonesia) · JagaPekerja</title>
+<meta name="description" content="Hitung iuran JKK dan JKM Pekerja Migran Indonesia sesuai jalur penempatan dan masa perjanjian kerja, dengan pilihan JHT.">
+<meta name="theme-color" content="#0D9488">
+<link rel="icon" href="assets/img/brand/favicon-32.png" sizes="32x32" type="image/png">
+<link rel="icon" href="assets/img/brand/icon-192.png" sizes="192x192" type="image/png">
+<link rel="apple-touch-icon" href="assets/img/brand/apple-touch-icon.png">
+<link rel="manifest" href="site.webmanifest">
+<meta name="application-name" content="JagaPekerja">
+<meta name="apple-mobile-web-app-title" content="JagaPekerja">
+<link rel="stylesheet" href="assets/css/site.css">
+
+<link rel="stylesheet" href="assets/css/simulator.css">
+<style>
+/* khusus simulator PMI (gaya bersama ada di assets/css/simulator.css) */
+.package-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.package{background:#fff;border:1.5px solid var(--line);border-radius:15px;padding:13px 10px;text-align:center;color:var(--muted);box-shadow:none}
+.package:hover{border-color:var(--brand-light)}
+.package.active{background:var(--primary2);border-color:var(--brand);color:var(--primary-700)}
+.package strong{display:block;font-size:17px;color:inherit}.package span{display:block;font-size:12px;margin-top:3px}
+.jht-options{display:flex;gap:8px;flex-wrap:wrap}
+.jht-opt{padding:10px 12px;background:#fff;border:1px solid var(--line);color:var(--ink);border-radius:999px;font-size:13px;box-shadow:none}
+.jht-opt.active{background:var(--primary);border-color:var(--primary);color:#fff}
+.route-choice{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.route-card{position:relative;background:#fff;border:1.5px solid var(--line2);border-radius:17px;padding:16px;text-align:left;color:var(--ink);box-shadow:var(--shadow-sm)}
+.route-card:hover{border-color:var(--brand)}
+.route-card.active{border-color:var(--brand);background:var(--primary-50);box-shadow:0 0 0 3px rgba(13,148,136,.12)}
+.route-card .route-icon{width:40px;height:40px;display:flex;align-items:center;justify-content:center;border-radius:12px;background:var(--primary2);color:var(--primary);margin-bottom:11px}
+.route-card strong{display:block;font-size:15px;margin-bottom:5px}
+.route-card span{display:block;font-size:12.5px;line-height:1.45;color:var(--muted);font-weight:500}
+.route-card .route-select{margin-top:11px;font-size:12px;font-weight:900;color:var(--primary)}
+.route-card.active .route-select:before{content:'✓ '}
+.protection-accordion{margin:14px 0 6px;border:1px solid var(--line);border-radius:18px;background:#fff;overflow:hidden}
+.protection-accordion summary{cursor:pointer;list-style:none;padding:15px 16px;display:flex;justify-content:space-between;align-items:flex-start;gap:14px}
+.protection-accordion summary::-webkit-details-marker{display:none}
+.protection-summary-copy strong{display:block;font-size:16px;line-height:1.35;margin-bottom:3px}
+.protection-summary-copy span{display:block;color:var(--muted);font-size:13px;line-height:1.5;font-weight:500}
+.protection-accordion summary:after{content:'+';flex:0 0 auto;color:var(--brand);font-size:24px;line-height:1;font-weight:500;transition:transform .25s var(--ease)}
+.protection-accordion[open] summary:after{transform:rotate(45deg)}
+.protection-body{padding:0 16px 16px;border-top:1px solid var(--line)}
+.protection-timeline{margin-top:16px}
+.timeline-item{display:grid;grid-template-columns:40px minmax(0,1fr);gap:12px;position:relative;padding-bottom:18px}
+.timeline-item:last-child{padding-bottom:0}
+.timeline-item:not(:last-child):after{content:'';position:absolute;left:16px;top:34px;bottom:0;width:2px;background:var(--line)}
+.timeline-marker{position:relative;z-index:2;width:34px;height:34px;border-radius:999px;display:flex;align-items:center;justify-content:center;background:var(--primary);color:#fff;font-weight:900;font-size:12px;box-shadow:0 0 0 5px var(--primary2)}
+.timeline-content strong{display:block;font-size:14.5px;margin-bottom:4px}
+.timeline-content span{display:block;font-size:13px;line-height:1.55;color:var(--muted)}
+.timeline-meta{display:flex;flex-wrap:wrap;gap:7px;margin-top:9px}
+.timeline-badge{display:inline-flex;align-items:center;padding:5px 9px;border-radius:999px;background:var(--surface-muted);border:1px solid var(--line);color:var(--muted);font-size:11.5px;font-weight:800}
+.timeline-badge.accent{background:var(--primary2);color:var(--primary-700);border-color:var(--line2)}
+.claim-accordion{margin-top:14px;border:1px solid var(--line);border-radius:14px;background:var(--surface-muted);overflow:hidden}
+.claim-accordion summary{cursor:pointer;list-style:none;padding:13px 14px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.claim-accordion summary::-webkit-details-marker{display:none}
+.claim-summary-copy strong{display:block;font-size:15px;line-height:1.4}
+.claim-toggle{flex:0 0 auto;color:var(--brand);font-size:22px;line-height:1;font-weight:500;transition:transform .25s var(--ease)}
+.claim-toggle:before{content:'+'}
+.claim-accordion[open] .claim-toggle{transform:rotate(45deg)}
+.claim-accordion-body{padding:0 14px 14px;border-top:1px solid var(--line)}
+.claim-accordion-body>p{margin:12px 0 0;color:var(--muted);font-size:13.5px;line-height:1.6}
+.claim-flow{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}
+.claim-step{border:1px solid var(--line);background:#fff;border-radius:13px;padding:11px}
+.claim-step strong{display:block;font-size:12px;margin-bottom:4px}
+.claim-step span{display:block;font-size:12px;color:var(--muted);line-height:1.4}
+.sensitive-note{margin-top:8px;padding:11px 12px;border-radius:12px;background:#FBF8F1;border:1px solid #EADFCE;color:#6B6257;font-size:12px;line-height:1.5}
+.jht-sim{margin-top:14px;border:1px solid var(--line);border-radius:18px;background:#fff;padding:14px}
+.jht-sim h4{margin:0 0 8px;font:600 16px/1.3 var(--font-heading)}
+.jht-sim-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.jht-sim-box{border:1px solid var(--line);border-radius:13px;padding:12px;background:var(--surface-muted)}
+.jht-sim-box span{display:block;font-size:11.5px;color:var(--muted);margin-bottom:4px}.jht-sim-box strong{font-size:15px}
+@media(max-width:650px){
+  .route-choice,.claim-flow{grid-template-columns:1fr}
+  .jht-sim-grid{grid-template-columns:1fr 1fr}.jht-sim-box:last-child{grid-column:1/-1}
+}
+</style>
+</head>
+<body data-page="pmi">
+<header data-sh-header></header>
+<script src="assets/js/site-config.js"></script>
+<script src="assets/js/site.js"></script>
+<div class="container" id="main">
+  <nav data-sh-crumbs></nav>
+
+  <section id="formView" class="sim-view">
+    <div class="sim-head" data-art="pmi">
+    <div class="eyebrow">Simulasi · Pekerja Migran Indonesia</div>
+    <h1>Simulasi iuran PMI</h1>
+    <div class="lead">Hitung perlindungan JKK dan JKM berdasarkan cara penempatan serta masa perjanjian kerja. Untuk PMI, simulasi dibuat <strong>per orang</strong>.</div>
+    <div class="seg-switch"><a href="segmen-pmi.html">Tentang segmen Pekerja Migran (PMI)</a> · Bekerja di dalam negeri? <a href="simulasi-pu.html">Simulasi PU</a> · <a href="simulasi-bpu.html">Simulasi BPU</a> · <a href="simulasi.html">Pilih segmen</a></div>
+    <div class="sim-help" data-sim-help>Butuh bantuan? <button type="button" class="sh-linkbtn" data-sh-konsul="Bantuan simulasi PMI">Konsultasi Langsung</button>, kami yang menghubungi.</div>
+    </div>
+
+    <details class="protection-accordion">
+      <summary>
+        <div class="protection-summary-copy">
+          <strong>Fase perlindungan PMI</strong>
+          <span>Sebelum berangkat, selama bekerja di luar negeri, hingga kembali ke daerah asal.</span>
+        </div>
+      </summary>
+      <div class="protection-body">
+        <div class="protection-timeline">
+        <div class="timeline-item">
+          <div class="timeline-marker">1</div>
+          <div class="timeline-content">
+            <strong>Sebelum bekerja</strong>
+            <span>Untuk CPMI melalui Pelaksana Penempatan, perlindungan dimulai sejak pendaftaran dan pembayaran iuran sampai embarkasi di Indonesia.</span>
+            <div class="timeline-meta">
+              <span class="timeline-badge accent">Maks. 5 bulan</span>
+              <span class="timeline-badge">PMI perseorangan: tambahan JKM maks. 1 bulan sebelum keberangkatan</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="timeline-item">
+          <div class="timeline-marker">2</div>
+          <div class="timeline-content">
+            <strong>Selama bekerja di negara penempatan</strong>
+            <span>Perlindungan berlangsung sejak berangkat dari embarkasi Indonesia menuju negara tujuan sampai berakhirnya perjanjian kerja.</span>
+            <div class="timeline-meta">
+              <span class="timeline-badge accent">Termasuk perjalanan keberangkatan</span>
+              <span class="timeline-badge">+ maks. 1 bulan untuk persiapan dan perjalanan pulang</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="timeline-item">
+          <div class="timeline-marker">3</div>
+          <div class="timeline-content">
+            <strong>Setelah bekerja / kembali ke Indonesia</strong>
+            <span>Setelah tiba di debarkasi Indonesia, perlindungan masih berlanjut selama perjalanan menuju daerah asal sesuai batas waktu program.</span>
+            <div class="timeline-meta">
+              <span class="timeline-badge accent">JKK: sampai daerah asal / maks. 30 hari</span>
+              <span class="timeline-badge">JKM: sampai 30 hari setelah tiba di debarkasi</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      </div>
+    </details>
+
+    <div class="card">
+      <div class="section-title"><span class="num">1</span>Bagaimana cara penempatannya?</div>
+      <div class="route-choice">
+        <button id="routeAgency" type="button" class="route-card" onclick="setRoute('agency')">
+          <div class="route-icon"><svg class="sh-i" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="3" width="11" height="18" rx="1.5"/><path d="M15 9h4a1 1 0 0 1 1 1v11h-5M7.5 7h4M7.5 11h4M7.5 15h4M9.5 21v-3"/></svg></div>
+          <strong>Melalui Pelaksana Penempatan</strong>
+          <span>Untuk CPMI/PMI yang proses penempatannya difasilitasi Pelaksana Penempatan.</span>
+          <div class="route-select">Pilih jalur ini</div>
+        </button>
+        <button id="routeIndividual" type="button" class="route-card" onclick="setRoute('individual')">
+          <div class="route-icon"><svg class="sh-i" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4.5 21a7.5 7.5 0 0 1 15 0"/></svg></div>
+          <strong>PMI Perseorangan</strong>
+          <span>Untuk PMI yang bekerja ke luar negeri tanpa melalui Pelaksana Penempatan.</span>
+          <div class="route-select">Pilih jalur ini</div>
+        </button>
+      </div>
+      <div id="routeError" class="error-msg">Pilih cara penempatan terlebih dahulu.</div>
+    </div>
+
+    <div class="card">
+      <div class="section-title"><span class="num">2</span>Masa perlindungan selama bekerja</div>
+      <div class="package-grid">
+        <button id="pkg6" type="button" class="package" onclick="setPackage(6)"><strong>6 bulan</strong><span>Rp108.000</span></button>
+        <button id="pkg12" type="button" class="package" onclick="setPackage(12)"><strong>12 bulan</strong><span>Rp189.000</span></button>
+        <button id="pkg24" type="button" class="package" onclick="setPackage(24)"><strong>24 bulan</strong><span>Rp332.500</span></button>
+      </div>
+      <div id="packageError" class="error-msg">Pilih paket masa perlindungan.</div>
+
+      <div id="extraWrap" class="hidden" style="margin-top:15px">
+        <label for="extraMonths">Ada tambahan/kelebihan masa perjanjian kerja?</label>
+        <input id="extraMonths" type="number" min="0" step="1" inputmode="numeric" value="0" oninput="clearError('extraMonths','extraError')">
+        <div class="helper">Tambahan masa setelah paket dasar dikenakan Rp13.500 per bulan.</div>
+        <div id="extraError" class="error-msg">Isi jumlah bulan dalam angka bulat, 0 atau lebih.</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="section-title"><span class="num">3</span>Tambahkan JHT?</div>
+      <div id="jhtOffer" class="smart-card">
+        <h4>Lengkapi perlindungan dengan JHT</h4>
+        <p>PMI dapat menambahkan JHT sebagai tabungan hari tua. Pilih iuran bulanan mulai Rp50.000 sampai Rp600.000.</p>
+        <button type="button" class="secondary" onclick="enableJHT()">+ Tambahkan JHT</button>
+      </div>
+
+      <div id="jhtSelected" class="smart-card hidden">
+        <h4>JHT ditambahkan ✓</h4>
+        <p>Pilih besar iuran JHT per bulan.</p>
+        <div class="jht-options">
+          <button type="button" class="jht-opt" onclick="setJht(50000)">Rp50 rb</button>
+          <button type="button" class="jht-opt" onclick="setJht(100000)">Rp100 rb</button>
+          <button type="button" class="jht-opt" onclick="setJht(200000)">Rp200 rb</button>
+          <button type="button" class="jht-opt" onclick="setJht(300000)">Rp300 rb</button>
+          <button type="button" class="jht-opt" onclick="setJht(400000)">Rp400 rb</button>
+          <button type="button" class="jht-opt" onclick="setJht(500000)">Rp500 rb</button>
+          <button type="button" class="jht-opt" onclick="setJht(600000)">Rp600 rb</button>
+        </div>
+        <div id="jhtError" class="error-msg">Pilih nominal JHT per bulan atau hapus JHT.</div>
+        <button type="button" class="outline" style="margin-top:12px;padding:10px 12px" onclick="disableJHT()">Hapus JHT</button>
+      </div>
+
+      <button class="primary full" style="margin-top:16px" onclick="calculate()">Hitung iuran PMI</button>
+    </div>
+  </section>
+
+  <section id="resultView" class="hidden sim-view">
+    <button class="backbtn" onclick="backToForm()">← Ubah data</button>
+    <div class="rs-head">
+      <div class="step-kicker">Hasil simulasi · Pekerja Migran Indonesia</div>
+      <h1>Perkiraan iuran perlindungan PMI</h1>
+    </div>
+    <div id="rsBody"></div>
+
+      <details class="claim-accordion">
+        <summary>
+          <div class="claim-summary-copy">
+            <strong>Bagaimana klaim JKK saat dirawat di luar negeri?</strong>
+          </div>
+          <span class="claim-toggle" aria-hidden="true"></span>
+        </summary>
+        <div class="claim-accordion-body">
+          <p>Untuk kecelakaan kerja di negara tujuan, jaminan sosial/asuransi setempat digunakan lebih dulu sesuai manfaatnya. Jika biaya perawatan melebihi batas manfaat tersebut, selisih biaya yang memenuhi ketentuan dapat diajukan sebagai manfaat JKK BPJS Ketenagakerjaan. Biaya dapat dibayar lebih dulu oleh pemberi kerja, Pelaksana Penempatan, mitra usaha, atau PMI dan kemudian dimintakan penggantian. Jika jaminan sosial/asuransi setempat belum aktif, BPJS Ketenagakerjaan menjadi penjamin biaya perawatan akibat kecelakaan kerja.</p>
+          <div class="claim-flow">
+            <div class="claim-step"><strong>1 · Gunakan jaminan setempat</strong><span>Jaminan sosial/asuransi negara penempatan dipakai sesuai batas manfaatnya.</span></div>
+            <div class="claim-step"><strong>2 · Bila melebihi batas</strong><span>Simpan resume medis, bukti biaya, dan keterangan pembayaran asuransi setempat.</span></div>
+            <div class="claim-step"><strong>3 · Ajukan manfaat JKK</strong><span>Selisih biaya yang memenuhi syarat dapat dimintakan penggantian ke BPJS Ketenagakerjaan.</span></div>
+          </div>
+          <div class="helper">Lampiran Permenaker 4/2023 menetapkan bantuan biaya perawatan/pengobatan JKK selama bekerja di negara penempatan paling banyak Rp50.000.000 per kasus.</div>
+        </div>
+      </details>
+
+      <details class="legal-box">
+        <summary>Dasar hukum perhitungan PMI</summary>
+        <div class="legal-content">
+          <div class="legal-item">
+            <strong>Permenaker Nomor 4 Tahun 2023 tentang Jaminan Sosial Pekerja Migran Indonesia</strong><br>
+            <span>Mengatur kepesertaan CPMI/PMI, masa perlindungan, besaran iuran JKK/JKM, pilihan iuran JHT, manfaat, dan mekanisme perlindungan sebelum, selama, serta setelah bekerja.</span><br>
+            <a href="https://jdih.kemnaker.go.id/asset/data_puu/2023pmnaker004.pdf" target="_blank" rel="noopener noreferrer">Buka / unduh PDF resmi ↗</a>
+          </div>
+        </div>
+      </details>
+
+    <div class="next-panel">
+      <h3>Siap melanjutkan perlindungan PMI?</h3>
+      <p>Lanjutkan melalui portal resmi, atau tinggalkan nomor HP lewat Konsultasi Langsung bila perlu bantuan. Ringkasan simulasi ikut terkirim, tanpa data pribadi.</p>
+      <div class="next-grid">
+        <a class="go" data-link="pmiPortal" href="https://pmi.bpjsketenagakerjaan.go.id/" target="_blank" rel="noopener noreferrer">Buka portal PMI resmi ↗</a>
+        <button type="button" class="chat" onclick="openWhatsApp()">Konsultasi Langsung</button>
+      </div>
+    </div>
+
+      <div class="faq-section">
+        <h3>Yang sering ditanyakan</h3>
+        <div class="faq-intro">Termasuk beberapa manfaat PMI yang sering tidak diketahui peserta.</div>
+
+        <details class="faq-item">
+          <summary>Kapan perlindungan PMI dimulai dan berakhir?</summary>
+          <div class="faq-answer">Perlindungan PMI terdiri dari fase sebelum bekerja, selama bekerja, dan setelah bekerja. Untuk jalur Pelaksana Penempatan, perlindungan sebelum bekerja paling lama 5 bulan. Perlindungan selama bekerja mencakup perjalanan dari embarkasi Indonesia, masa kerja, sampai persiapan dan perjalanan pulang ke debarkasi Indonesia. Setelah tiba di Indonesia, perlindungan JKK/JKM masih berlanjut sesuai batas waktu yang diatur.</div>
+        </details>
+
+        <details class="faq-item">
+          <summary>Kalau kecelakaan kerja di luar negeri, apakah BPJS langsung membayar rumah sakit?</summary>
+          <div class="faq-answer">Tidak selalu. Jika PMI memiliki jaminan sosial atau asuransi di negara penempatan, manfaat tersebut digunakan terlebih dahulu. Jika biaya perawatan melebihi batasnya, biaya yang memenuhi ketentuan dapat dibayar terlebih dahulu lalu dimintakan penggantian kepada BPJS Ketenagakerjaan. Bila jaminan sosial/asuransi setempat belum aktif, BPJS Ketenagakerjaan menjadi penjamin biaya perawatan akibat kecelakaan kerja.</div>
+        </details>
+
+        <details class="faq-item">
+          <summary>Berapa maksimal bantuan biaya pengobatan JKK saat bekerja di luar negeri?</summary>
+          <div class="faq-answer">Lampiran Permenaker 4 Tahun 2023 menetapkan bantuan biaya perawatan dan pengobatan akibat kecelakaan kerja di negara tujuan penempatan sesuai biaya yang dikeluarkan, paling banyak Rp50.000.000 per kasus.</div>
+        </details>
+
+        <details class="faq-item">
+          <summary>Apakah perlindungan tetap ada saat pulang cuti atau kembali ke Indonesia?</summary>
+          <div class="faq-answer">Ya. Manfaat JKK selama bekerja juga mencakup kecelakaan kerja pada perjalanan pulang ke Indonesia dan/atau kembali ke negara tujuan dalam rangka cuti. Pada akhir masa kerja, perlindungan juga mencakup persiapan kepulangan dan perjalanan sampai debarkasi di Indonesia sesuai ketentuan.</div>
+        </details>
+
+        <details class="faq-item">
+          <summary>Apakah ada manfaat bila PMI mengalami kekerasan fisik atau pemerkosaan?</summary>
+          <div class="faq-answer">Ada. Permenaker 4 Tahun 2023 menyatakan pelayanan kesehatan JKK juga berlaku bagi PMI yang terbukti mengalami tindak kekerasan fisik dan/atau pemerkosaan. Untuk PMI yang terbukti mengalami pemerkosaan, Lampiran Permenaker juga menetapkan bantuan uang Rp50.000.000. Ketentuan klaim dan dokumen pembuktian tetap berlaku.</div>
+          <div class="sensitive-note">Topik ini ditampilkan karena merupakan hak/manfaat yang diatur resmi dan penting diketahui peserta. Penyajiannya sengaja dibuat singkat dan non-grafis.</div>
+        </details>
+
+        <details class="faq-item">
+          <summary>Apa manfaat JKM jika PMI meninggal bukan karena kecelakaan kerja?</summary>
+          <div class="faq-answer">Untuk PMI yang meninggal pada masa selama bekerja, manfaat JKM berupa santunan kematian, santunan berkala, dan biaya pemakaman yang dibayarkan sekaligus sebesar Rp85.000.000, serta manfaat beasiswa pendidikan/pelatihan bagi paling banyak 2 anak yang memenuhi syarat. Besaran pada fase sebelum dan setelah bekerja berbeda.</div>
+        </details>
+
+        <details class="faq-item">
+          <summary>Kenapa ada pilihan 6, 12, dan 24 bulan?</summary>
+          <div class="faq-answer">Iuran JKK + JKM selama dan setelah bekerja mengikuti jangka waktu perjanjian kerja: 6 bulan Rp108.000, 12 bulan Rp189.000, dan 24 bulan Rp332.500. Kelebihan masa perjanjian kerja dikenakan Rp13.500 per bulan.</div>
+        </details>
+
+        <details class="faq-item">
+          <summary>Apakah PMI perseorangan memiliki perlindungan sebelum berangkat?</summary>
+          <div class="faq-answer">PMI perseorangan mendapatkan tambahan perlindungan JKM paling lama 1 bulan sejak pendaftaran dan pembayaran iuran sampai tiba di embarkasi Indonesia. Ini berbeda dengan perlindungan sebelum bekerja bagi CPMI melalui Pelaksana Penempatan yang dapat berlangsung paling lama 5 bulan.</div>
+        </details>
+
+        <details class="faq-item">
+          <summary>Apakah JHT wajib?</summary>
+          <div class="faq-answer">JKK dan JKM wajib bagi CPMI/PMI, sedangkan JHT dapat diikuti sebagai tambahan perlindungan hari tua. Pada simulator ini JHT dipisahkan dari JKK + JKM supaya pola iurannya lebih mudah dipahami.</div>
+        </details>
+      </div>
+    <p class="page-footnote">Hasil simulasi adalah perkiraan untuk persiapan, bukan tagihan resmi. Besaran resmi mengikuti ketentuan dan tagihan dari kanal resmi BPJS Ketenagakerjaan.</p>
+  </section>
+</div>
+
+<script src="assets/js/sim-report.js"></script>
+<script>
+const CFG={
+  beforeAgency:37500,
+  packages:{6:108000,12:189000,24:332500},
+  extensionMonthly:13500,
+  verified:'2026-09-24'
+};
+let route=null, baseMonths=null, jhtEnabled=false, jhtMonthly=0, last=null;
+
+function rupiah(n){return new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR',maximumFractionDigits:0}).format(Math.round(n))}
+function clearError(fieldId,errorId){
+  const f=document.getElementById(fieldId),e=document.getElementById(errorId);
+  if(f)f.classList.remove('field-error'); if(e)e.classList.remove('show');
+}
+function setRoute(v){
+  route=v;
+  document.getElementById('routeAgency').classList.toggle('active',v==='agency');
+  document.getElementById('routeIndividual').classList.toggle('active',v==='individual');
+  document.getElementById('routeError').classList.remove('show');
+}
+function setPackage(m){
+  baseMonths=m;
+  [6,12,24].forEach(x=>document.getElementById('pkg'+x).classList.toggle('active',x===m));
+  document.getElementById('packageError').classList.remove('show');
+  document.getElementById('extraWrap').classList.remove('hidden');
+}
+function enableJHT(){
+  jhtEnabled=true;
+  document.getElementById('jhtOffer').classList.add('hidden');
+  document.getElementById('jhtSelected').classList.remove('hidden');
+}
+function disableJHT(){
+  jhtEnabled=false;jhtMonthly=0;
+  document.getElementById('jhtSelected').classList.add('hidden');
+  document.getElementById('jhtOffer').classList.remove('hidden');
+  document.querySelectorAll('.jht-opt').forEach(x=>x.classList.remove('active'));
+  document.getElementById('jhtError').classList.remove('show');
+}
+function setJht(v){
+  jhtMonthly=v;
+  document.querySelectorAll('.jht-opt').forEach(x=>{
+    const m=(x.getAttribute('onclick')||'').match(/\d+/);
+    x.classList.toggle('active',m && Number(m[0])===v);
+  });
+  document.getElementById('jhtError').classList.remove('show');
+}
+function validate(){
+  let ok=true;
+  if(!route){document.getElementById('routeError').classList.add('show');ok=false}
+  if(!baseMonths){document.getElementById('packageError').classList.add('show');ok=false}
+  const extra=Number(document.getElementById('extraMonths').value||0);
+  if(extra<0||!Number.isInteger(extra)){document.getElementById('extraError').classList.add('show');document.getElementById('extraMonths').classList.add('field-error');ok=false}
+  if(jhtEnabled && !jhtMonthly){document.getElementById('jhtError').classList.add('show');ok=false}
+  if(!ok) window.scrollTo({top:0,behavior:'smooth'});
+  return ok;
+}
+function calculate(){
+  if(!validate())return;
+  const extra=Math.max(0,Number(document.getElementById('extraMonths').value||0));
+  const before=route==='agency'?CFG.beforeAgency:0;
+  const packageFee=CFG.packages[baseMonths];
+  const extraFee=extra*CFG.extensionMonthly;
+  const during=packageFee+extraFee;
+  const total=before+during;
+  const totalContractMonths=baseMonths+extra;
+
+  last={route,baseMonths,extra,before,packageFee,extraFee,during,total,jhtEnabled,jhtMonthly,totalContractMonths};
+  showFinal();
+}
+function fmtDateID(iso){
+  const [y,m,d]=iso.split('-').map(Number);
+  return new Intl.DateTimeFormat('id-ID',{day:'numeric',month:'long',year:'numeric'}).format(new Date(y,m-1,d));
+}
+/* Satu model hasil → tampilan layar, cetak, PDF, dan teks bagikan (assets/js/sim-report.js) */
+function buildModel(){
+  const L=last,agency=L.route==='agency',months=L.baseMonths+(L.extra?` + ${L.extra}`:'');
+  const prog=[];
+  if(agency)prog.push({kode:'Pra',nama:'Sebelum bekerja (JKK + JKM)',ket:'Sejak pendaftaran & pembayaran iuran sampai embarkasi, paling lama 5 bulan',nilai:L.before,unit:'sekali bayar'});
+  prog.push({kode:'Kerja',nama:`Selama & setelah bekerja · paket ${L.baseMonths} bulan`,ket:'Dari embarkasi sampai akhir perjanjian kerja, ditambah paling lama 1 bulan untuk perjalanan pulang',nilai:L.packageFee,unit:'sekali bayar'});
+  if(L.extra)prog.push({kode:'+'+L.extra,nama:`Tambahan masa ${L.extra} bulan`,ket:'Rp13.500 per bulan kelebihan masa perjanjian kerja',nilai:L.extraFee,unit:'sekali bayar'});
+  if(L.jhtEnabled)prog.push({kode:'JHT',nama:'Jaminan Hari Tua (pilihan)',ket:'Iuran bulanan tersendiri, tidak termasuk angka utama',nilai:L.jhtMonthly,unit:'per bulan'});
+  const catatan=['Perlindungan selama bekerja berlangsung sejak keberangkatan dari embarkasi sampai akhir perjanjian kerja, ditambah paling lama 1 bulan untuk persiapan dan perjalanan pulang sampai debarkasi Indonesia.'];
+  if(L.jhtEnabled)catatan.push('JHT merupakan iuran bulanan tersendiri dan tidak digabung ke tagihan sekali bayar JKK + JKM.');
+  return {
+    kode:'PMI',segmen:'Pekerja Migran Indonesia (PMI)',berkas:'simulasi-iuran-pmi',
+    label:'Total iuran JKK + JKM',total:L.total,
+    sub:`Dibayar sekali untuk masa perjanjian kerja ${months} bulan`,
+    split:agency?[{label:'Sebelum bekerja',nilai:L.before},{label:'Selama & setelah bekerja',nilai:L.during}]:null,
+    banner:{nada:'info',judul:'Dihitung sesuai Permenaker Nomor 4 Tahun 2023',
+      teks:(agency?'Penempatan melalui Pelaksana Penempatan: komponen perlindungan sebelum bekerja Rp37.500 ikut dihitung.':'PMI perseorangan: tidak ada iuran sebelum bekerja, tetapi ada tambahan perlindungan JKM paling lama 1 bulan sampai tiba di embarkasi Indonesia.')+` Ketentuan diperiksa ${fmtDateID(CFG.verified)}.`,
+      tautan:{label:'PDF Permenaker 4/2023',url:'https://jdih.kemnaker.go.id/asset/data_puu/2023pmnaker004.pdf'}},
+    masukan:[['Cara penempatan',agency?'Melalui Pelaksana Penempatan':'PMI perseorangan'],['Paket masa perlindungan',`${L.baseMonths} bulan`],['Tambahan masa',L.extra?`${L.extra} bulan`:'Tidak ada'],['JHT',L.jhtEnabled?`${rupiah(L.jhtMonthly)} per bulan`:'Tidak dipilih']],
+    program:prog,programTotal:{label:'Total JKK + JKM',nilai:L.total,unit:'sekali bayar'},
+    catatan,dasar:['Permenaker Nomor 4 Tahun 2023 tentang Jaminan Sosial Pekerja Migran Indonesia — paket iuran JKK & JKM (6 bulan Rp108.000, 12 bulan Rp189.000, 24 bulan Rp332.500), tambahan masa Rp13.500 per bulan, dan pilihan JHT'],
+    tautan:location.href.split(/[?#]/)[0]+`?jalur=${agency?'penempatan':'perseorangan'}&paket=${L.baseMonths}`,
+    ubah:backToForm,extraHtml:L.jhtEnabled?jhtPlanHtml():''
+  };
+}
+function jhtPlanHtml(){
+  const months=last.totalContractMonths,principal=last.jhtMonthly*months,mr=Math.pow(1.05,1/12)-1;
+  const future=last.jhtMonthly*((Math.pow(1+mr,months)-1)/mr),growth=Math.max(0,future-principal);
+  return `<div class="jht-sim"><h4>Ilustrasi JHT selama masa kontrak (${months} bulan)</h4><div class="jht-sim-grid">
+    <div class="jht-sim-box"><span>Total setoran</span><strong id="jhtPrincipal">${rupiah(principal)}</strong></div>
+    <div class="jht-sim-box"><span>Estimasi pengembangan*</span><strong id="jhtGrowth">${rupiah(growth)}</strong></div>
+    <div class="jht-sim-box"><span>Estimasi saldo akhir*</span><strong id="jhtFuture">${rupiah(future)}</strong></div></div>
+    <div class="helper">*Ilustrasi menggunakan asumsi hasil pengembangan 5% per tahun dan iuran bulanan tetap. Hasil aktual dapat berbeda.</div></div>`;
+}
+function showFinal(){
+  SHR.render(document.getElementById('rsBody'),buildModel());
+  document.getElementById('formView').classList.add('hidden');
+  document.getElementById('resultView').classList.remove('hidden');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+function backToForm(){
+  document.getElementById('resultView').classList.add('hidden');
+  document.getElementById('formView').classList.remove('hidden');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+document.querySelectorAll('.next-grid .chat').forEach(b=>{b.textContent=SH.hasWhatsApp()?'Chat Petugas (WhatsApp)':'Konsultasi Langsung';});
+function openWhatsApp(){
+  SH.openWhatsApp(`Halo Pak/Bu, saya sudah mencoba simulasi PMI. Cara penempatan: ${last.route==='agency'?'melalui Pelaksana Penempatan':'PMI perseorangan'}, paket ${last.baseMonths} bulan${last.extra?` + ${last.extra} bulan`:''}, estimasi JKK+JKM ${rupiah(last.total)}. Saya ingin dibantu lebih lanjut.`);
+}
+/* Deep link: simulasi-pmi.html?jalur=penempatan|perseorangan&paket=6|12|24 */
+(function(){
+  const j=SH.param('jalur'); if(j==='penempatan'||j==='agency') setRoute('agency'); else if(j==='perseorangan'||j==='individual') setRoute('individual');
+  const p=Number(SH.param('paket')); if([6,12,24].includes(p)) setPackage(p);
+})();
+</script>
+
+<footer data-sh-footer></footer>
+<script>SH.crumbs([{label:'Simulasi', href:SH.url('simulasi')},{label:'PMI (pekerja migran)'}]);</script>
+</body>
+</html>

@@ -1,0 +1,1104 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Simulasi Penerima Upah & Jasa Konstruksi · JagaPekerja</title>
+<meta name="description" content="Cari jenis usaha, temukan kelompok risiko JKK, lalu hitung iuran perusahaan atau proyek jasa konstruksi.">
+<meta name="theme-color" content="#0D9488">
+<link rel="icon" href="assets/img/brand/favicon-32.png" sizes="32x32" type="image/png">
+<link rel="icon" href="assets/img/brand/icon-192.png" sizes="192x192" type="image/png">
+<link rel="apple-touch-icon" href="assets/img/brand/apple-touch-icon.png">
+<link rel="manifest" href="site.webmanifest">
+<meta name="application-name" content="JagaPekerja">
+<meta name="apple-mobile-web-app-title" content="JagaPekerja">
+<link rel="stylesheet" href="assets/css/site.css">
+
+<link rel="stylesheet" href="assets/css/simulator.css">
+<style>
+/* khusus simulator PU & Jasa Konstruksi (gaya bersama ada di assets/css/simulator.css) */
+.searchbox{display:flex;gap:10px;align-items:stretch;flex-wrap:wrap}
+.searchwrap{position:relative;flex:1;min-width:250px}
+.examples{margin-top:12px;color:var(--muted);font-size:14px}
+.examples button{padding:0;background:none;color:var(--primary);font-weight:700;box-shadow:none;margin:0 2px}
+.suggestbox{position:absolute;left:0;right:0;top:calc(100% + 6px);background:#fff;border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow-card);z-index:30;overflow-y:auto;max-height:230px;display:none;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;touch-action:pan-y}
+.suggestitem{width:100%;text-align:left;background:#fff;border:0;border-bottom:1px solid var(--line);border-radius:0;padding:12px 14px;font-weight:700;color:var(--ink);box-shadow:none}
+.suggestitem:last-child{border-bottom:0}
+.suggestitem:hover,.suggestitem:focus,.suggestitem:active,.suggestitem.active{background:var(--primary2);outline:none}
+.suggestitem mark{background:none;color:var(--primary);font-weight:900}
+.suggestsub{display:block;font-size:12px;color:var(--muted);font-weight:500;margin-top:3px}
+.question{border-left:4px solid var(--brand)}
+.options{display:grid;gap:10px;margin-top:14px}
+.option{display:block;width:100%;text-align:left;background:#fff;border:1.5px solid var(--line);padding:14px 15px;box-shadow:none}
+.option:hover{border-color:var(--brand)}
+.option span{display:block;font-weight:800;line-height:1.4}
+.option small{display:block;margin-top:4px;color:var(--muted);font-weight:500;font-size:12.5px}
+.title{font-size:19px;font-weight:800;font-family:var(--font-heading)}
+.banner-note{margin-top:6px;font-size:12.5px;color:var(--warn);font-weight:600}
+.branch-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.branch-card{border:1.5px solid var(--line);border-radius:18px;padding:18px;background:#fff;text-align:left;box-shadow:var(--shadow-sm)}
+.branch-card strong{display:block;font-size:17px;margin-bottom:7px}
+.branch-card span{display:block;color:var(--muted);font-size:13.5px;line-height:1.5;font-weight:500}
+.branch-card:hover{border-color:var(--brand);background:var(--primary-50);transform:translateY(-2px)}
+@media(max-width:650px){
+  .searchbox>.primary{width:100%}
+  .branch-grid{grid-template-columns:1fr}
+}
+/* Business Finder */
+.finder-results{margin-top:24px}
+.res-head{border-radius:16px;padding:13px 15px;margin:0 0 12px;font-size:13.5px;line-height:1.5;border:1px solid var(--line);background:#fff}
+.res-head strong{display:block;font-size:15px;margin-bottom:2px}
+.res-head span{color:var(--muted)}
+.res-head.ok{background:var(--primary2);border-color:var(--line2)}.res-head.ok strong{color:var(--primary-700)}
+.res-head.warn{background:var(--warnbg);border-color:var(--warnline)}.res-head.warn strong{color:var(--warn)}
+.bcard-top{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:10px}
+.badge.alt{background:var(--soft);color:var(--muted)}
+.gchip{display:inline-block;font-size:12px;font-weight:800;border-radius:999px;padding:5px 9px;border:1px solid transparent;line-height:1.2}
+.gchip.g1{background:#E4F4F1;color:#07675F;border-color:#BFE3DB}
+.gchip.g2{background:#EEF5E4;color:#3F6212;border-color:#D9E8C4}
+.gchip.g3{background:#FFF4C7;color:#7A5A00;border-color:#EFD98A}
+.gchip.g4{background:#FDEEDC;color:#8A4B08;border-color:#F3D2AC}
+.gchip.g5{background:#FBE6E3;color:#9B2C1F;border-color:#F1C4BD}
+.bname{font-family:var(--font-heading);font-weight:600;font-size:18px;line-height:1.3;margin:0 0 6px;letter-spacing:-.01em}
+.bex{font-size:13.5px;color:var(--muted);line-height:1.5}
+.bmatch{font-size:13px;margin-top:8px}
+.binfer{margin-top:10px;font-size:13px;line-height:1.5;background:var(--warnbg);border:1px solid var(--warnline);color:#5F4700;border-radius:12px;padding:9px 11px}
+.binfer.soft{background:var(--surface-muted);border-color:var(--line);color:var(--muted)}
+.bcard .full{margin-top:14px}
+.bcard.main{border-color:var(--line2);box-shadow:var(--shadow-card)}
+.alt-box{margin-top:6px}
+.alt-box>summary{cursor:pointer;font-weight:800;color:var(--primary);font-size:14px;padding:10px 2px;list-style:none}
+.alt-box>summary::-webkit-details-marker{display:none}
+.alt-box>summary:before{content:'+ '}.alt-box[open]>summary:before{content:'– '}
+.q-kicker{font-size:11.5px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;color:var(--primary);margin-bottom:6px}
+.q-note{margin-top:12px}
+.hint{display:flex;flex-direction:column;gap:6px;border:1px solid var(--line2);border-left:4px solid var(--brand);background:#fff;border-radius:14px;padding:13px 15px;margin-bottom:12px;font-size:13.5px;line-height:1.5}
+.hint span{color:var(--muted)}
+.hint .hint-cta,.hint button{align-self:flex-start;font-weight:800;color:var(--primary);text-decoration:none;font-size:13.5px}
+.hint button{padding:9px 12px}
+.tip{border:1px dashed var(--line2);border-radius:14px;padding:12px 14px;margin-bottom:12px;font-size:13.5px;line-height:1.5;color:var(--muted);background:var(--surface-muted)}
+.tip strong{color:var(--ink)}
+.fix-note{font-size:13px;color:var(--muted);margin-bottom:10px}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.chip{background:#fff;border:1px solid var(--line);border-radius:999px;padding:9px 12px;font-size:13px;color:var(--primary);box-shadow:none}
+.action-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+.linkbtn{background:none;color:var(--primary);padding:6px 0;font-size:14px;border-radius:0;box-shadow:none}
+.browse-box{margin-top:24px;border:1px solid var(--line);border-radius:18px;background:#fff;overflow:hidden}
+.browse-box>summary{cursor:pointer;padding:15px 16px;font-weight:800;list-style:none;display:flex;justify-content:space-between;gap:10px}
+.browse-box>summary::-webkit-details-marker{display:none}
+.browse-box>summary:after{content:'+';color:var(--brand);font-size:22px;line-height:1;transition:transform .25s var(--ease)}.browse-box[open]>summary:after{transform:rotate(45deg)}
+.sector-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:0 14px 14px}
+.sector{text-align:left;background:var(--surface-muted);border:1px solid var(--line);padding:12px;border-radius:13px;font-weight:700;font-size:13px;color:var(--ink);line-height:1.35;box-shadow:none}
+.sector small{display:block;color:var(--muted);font-weight:500;margin-top:3px;font-size:11.5px}
+.sector.active{border-color:var(--brand);background:var(--primary2)}
+#browseList{padding:0 14px}
+#browseList:not(:empty){padding-bottom:14px}
+.browse-head{display:flex;justify-content:space-between;align-items:center;padding:8px 0}
+.brow{display:flex;justify-content:space-between;gap:12px;align-items:center;padding:12px 0;border-top:1px solid var(--line)}
+.brow-main{min-width:0}
+.brow-name{font-weight:800;font-size:14px;line-height:1.35}
+.brow-ex{font-size:12.5px;color:var(--muted);margin:3px 0 6px}
+.brow button{padding:10px 14px;flex:0 0 auto}
+/* mode kurator (?kurator=1) */
+.kurator{margin-top:30px;border:1px dashed var(--line2);border-radius:18px;padding:16px;background:var(--surface-muted);font-size:13px}
+.k-head{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:12px}.k-head span{color:var(--muted)}
+.kstat{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.kstat div{border:1px solid var(--line);border-radius:12px;padding:10px;background:#fff}
+.kstat span{display:block;font-size:11px;color:var(--muted)}.kstat b{font-size:18px}
+.k-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.k-actions button{padding:10px 12px;font-size:13px}
+.k-sub{font-weight:800;margin:16px 0 6px}
+.ktable{width:100%;border-collapse:collapse;font-size:12px;margin-top:6px}
+.ktable th,.ktable td{text-align:left;padding:6px;border-bottom:1px solid var(--line);vertical-align:top}
+.ktable tr.kmiss td{background:#FFF5F3}
+.kdebug{margin-top:8px;font:11px/1.45 ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--muted);background:var(--soft);border-radius:8px;padding:6px 8px;word-break:break-word}
+.kentry{margin-top:6px;font-size:11.5px;line-height:1.5;color:var(--muted);background:var(--soft);border-radius:8px;padding:7px 9px}
+.knew{background:var(--accent-soft);border-radius:4px;padding:0 3px}
+@media(max-width:650px){
+  .sector-grid{grid-template-columns:1fr;gap:6px}
+  .sector{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 12px}
+  .sector small{margin:0;flex:0 0 auto}
+  .kstat{grid-template-columns:1fr 1fr}
+  .brow{align-items:flex-start}
+  .bname{font-size:17px}
+}
+</style>
+</head>
+<body data-page="pu">
+<header data-sh-header></header>
+<script src="assets/js/site-config.js"></script>
+<script src="assets/js/site.js"></script>
+<div class="container" id="main">
+  <nav data-sh-crumbs></nav>
+
+  <section id="finderView" class="sim-view">
+    <div class="sim-head" data-art="pu">
+    <div class="eyebrow">Simulasi · Penerima Upah</div>
+    <h1>Cari jenis usaha, lalu hitung iurannya</h1>
+    <div class="lead">Ketik usaha Anda dengan bahasa sehari-hari, misalnya <b>warung kopi</b>, <b>bengkel las</b>, atau <b>toko bangunan</b>. Kelompok risiko JKK yang ditemukan akan diteruskan ke simulator PU.</div>
+    <div class="seg-switch"><a href="segmen-pu.html">Tentang segmen Penerima Upah</a> · Pekerja mandiri? <a href="simulasi-bpu.html">Simulasi BPU</a> · Bekerja ke luar negeri? <a href="simulasi-pmi.html">Simulasi PMI</a> · <a href="simulasi.html">Pilih segmen</a></div>
+    <div class="sim-help" data-sim-help>Bingung menentukan jenis usaha? <button type="button" class="sh-linkbtn" data-sh-konsul="Bantuan menentukan jenis usaha (simulasi PU)">Konsultasi Langsung</button>, kami yang menghubungi.</div>
+    </div>
+
+    <div class="searchbox" role="search" data-fab-avoid>
+      <div class="searchwrap">
+        <input id="q" type="search" placeholder="Contoh: warung kopi" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="search"
+          aria-label="Jenis usaha" role="combobox" aria-autocomplete="list" aria-controls="suggestions" aria-expanded="false">
+        <div id="suggestions" class="suggestbox" role="listbox"></div>
+      </div>
+      <button type="button" class="primary" id="searchBtn">Cari jenis usaha</button>
+    </div>
+    <div class="examples">Coba:
+      <button type="button" data-demo="toko baju">toko baju</button> ·
+      <button type="button" data-demo="warung kopi">warung kopi</button> ·
+      <button type="button" data-demo="bengkel motor">bengkel motor</button> ·
+      <button type="button" data-demo="kopi">kopi</button> ·
+      <button type="button" data-demo="ekspedisi">ekspedisi</button>
+    </div>
+
+    <div id="finderResults" class="finder-results" aria-live="polite">
+      <div class="card note">Masukkan jenis usaha untuk memulai. Pencarian memahami singkatan, salah ketik ringan, dan istilah sehari-hari.</div>
+    </div>
+
+    <details id="browseBox" class="browse-box">
+      <summary>Tidak menemukan? Jelajahi berdasarkan bidang usaha</summary>
+      <div id="browseSectors" class="sector-grid"></div>
+      <div id="browseList"></div>
+    </details>
+
+    <div id="kuratorPanel" class="kurator hidden"></div>
+  </section>
+
+  <section id="simView" class="hidden sim-view">
+    <button type="button" class="backbtn" onclick="goBackToFinder()">← Kembali ke jenis usaha</button>
+    <div class="sim-top">
+      <div class="eyebrow">Simulator Penerima Upah</div>
+      <h1>Hitung iuran perusahaan</h1>
+      <div class="lead">Tiga langkah singkat. Perkiraan iuran langsung berubah saat Anda mengisi.</div>
+      <div class="sim-help" data-sim-help>Ragu soal skala usaha atau nilai upah? <button type="button" class="sh-linkbtn" data-sh-konsul="Bantuan mengisi simulasi PU">Konsultasi Langsung</button>, kami yang menghubungi.</div>
+    </div>
+
+    <div id="businessBanner" class="biz-card"></div>
+    <input type="hidden" id="risk" value="1">
+
+    <div class="card">
+      <div class="section-title"><span class="num">1</span><div>Skala usaha<small>Menentukan program yang wajib diikuti</small></div></div>
+      <div class="pillset" role="radiogroup" aria-label="Skala usaha">
+        <label class="pill"><input type="radio" name="scale" value="micro"><span><b>Mikro</b><small>Wajib JKK &amp; JKM</small></span></label>
+        <label class="pill"><input type="radio" name="scale" value="small"><span><b>Kecil</b><small>+ JHT wajib</small></span></label>
+        <label class="pill"><input type="radio" name="scale" value="mediumlarge" checked><span><b>Menengah / Besar</b><small>+ JHT &amp; JP wajib</small></span></label>
+      </div>
+      <details class="mini-help">
+        <summary>Bagaimana menentukan skala usaha?</summary>
+        <div>Acuan umum (PP 7/2021), berdasarkan modal usaha atau hasil penjualan per tahun:
+          <ul>
+            <li><b>Mikro:</b> modal sampai Rp1 miliar (di luar tanah &amp; bangunan) atau penjualan sampai Rp2 miliar.</li>
+            <li><b>Kecil:</b> modal di atas Rp1–5 miliar atau penjualan di atas Rp2–15 miliar.</li>
+            <li><b>Menengah / Besar:</b> modal di atas Rp5 miliar atau penjualan di atas Rp15 miliar.</li>
+          </ul>
+          Skala usaha dipastikan petugas saat pendaftaran.</div>
+      </details>
+    </div>
+
+    <div class="card">
+      <div class="section-title"><span class="num">2</span><div>Upah sebulan &amp; jumlah pekerja<small>Semua pekerja dihitung dengan upah yang sama</small></div></div>
+      <label for="wage" class="lbl">Upah <u>sebulan</u> per pekerja <span class="unit-flag">per bulan</span></label>
+      <div class="money" id="wageBox"><span class="pre">Rp</span><input id="wage" inputmode="numeric" autocomplete="off" placeholder="4.000.000" aria-describedby="wageHelp" oninput="formatLiveWage();clearErr('wage');checkWageMin(false);puLive()" onblur="checkWageMin(false)"><span class="suf">/ bulan</span></div>
+      <div id="wageError" class="error-msg">Masukkan upah sebulan per pekerja.</div>
+      <div id="wageMin" class="min-note hidden" role="status"></div>
+      <div class="helper" id="wageHelp"><b>Bukan upah harian.</b> Isi upah satu bulan penuh yang menjadi dasar iuran (upah pokok + tunjangan tetap). Dibayar harian? Kalikan dengan jumlah hari kerja sebulan, misalnya Rp100.000 × 26 hari = Rp2.600.000.</div>
+
+      <div class="count-row">
+        <label>Berapa pekerja yang dihitung?</label>
+        <div class="pillset two" role="radiogroup" aria-label="Jumlah pekerja">
+          <label class="pill"><input type="radio" name="countMode" value="single" checked onchange="updateCountMode()"><span><b>1 pekerja</b><small>Rincian per orang</small></span></label>
+          <label class="pill"><input type="radio" name="countMode" value="multiple" onchange="updateCountMode()"><span><b>Beberapa</b><small>Upah sama</small></span></label>
+        </div>
+        <div id="workersWrap" class="stepper-wrap hidden">
+          <label for="workers">Jumlah pekerja</label>
+          <div class="stepper"><button type="button" data-stepper="-1" aria-label="Kurangi jumlah pekerja">−</button><input id="workers" type="number" min="2" step="1" value="2" inputmode="numeric" oninput="puLive()"><button type="button" data-stepper="1" aria-label="Tambah jumlah pekerja">+</button></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="section-title"><span class="num">3</span><div>Program yang dihitung<small>Otomatis mengikuti skala usaha</small></div></div>
+      <div class="progs">
+        <div class="prog is-on is-locked"><span class="code">JKK</span><div class="prog-main"><b>Kecelakaan Kerja</b><small>Wajib untuk semua skala usaha</small></div><span class="lock">Wajib</span></div>
+        <div class="prog is-on is-locked"><span class="code">JKM</span><div class="prog-main"><b>Kematian</b><small>Wajib untuk semua skala usaha</small></div><span class="lock">Wajib</span></div>
+        <label class="prog" id="jhtRow"><span class="code">JHT</span><div class="prog-main"><b>Hari Tua</b><small id="jhtNote"></small></div><span class="lock">Wajib</span><span class="switch"><input type="checkbox" id="jht" checked aria-label="Ikutkan JHT"><i></i></span></label>
+        <label class="prog" id="jpRow"><span class="code">JP</span><div class="prog-main"><b>Pensiun</b><small id="jpNote"></small></div><span class="lock">Wajib</span><span class="switch"><input type="checkbox" id="jp" checked aria-label="Ikutkan JP"><i></i></span></label>
+      </div>
+    </div>
+
+    <div class="live" id="puLive" aria-live="polite">
+      <span class="live-label"><span class="dot"></span>Perkiraan iuran per bulan</span>
+      <strong class="live-amt is-empty" id="puLiveAmt">Isi upah sebulan</strong>
+      <span class="live-sub" id="puLiveSub">Perkiraan muncul otomatis. Minimal Rp1.500.000 per bulan.</span>
+      <div class="live-split" id="puLiveSplit"></div>
+      <button type="button" class="go" onclick="calculate()">Lihat rincian lengkap →</button>
+      <div class="live-note">Perkiraan, bukan tagihan resmi. JKP tidak menambah iuran.</div>
+    </div>
+  </section>
+
+
+  <section id="constructionGateView" class="hidden sim-view">
+    <button type="button" class="backbtn" onclick="showView('finder')">← Kembali ke pencarian</button>
+    <div class="sim-head" data-art="jakon">
+    <div class="eyebrow">Konteks konstruksi</div>
+    <h1>Yang ingin Anda hitung yang mana?</h1>
+    <div class="lead" style="margin-bottom:0">Kegiatan konstruksi bisa masuk ke dua jalur berbeda. Pilih konteks tenaga kerja yang ingin dihitung.</div>
+    </div>
+
+    <details class="legal-box" style="margin-bottom:14px">
+      <summary>Kenapa jalur proyek dibedakan?</summary>
+      <div class="legal-content">
+        <div class="legal-item">
+          <strong>Permenaker Nomor 5 Tahun 2021 jo. Permenaker Nomor 1 Tahun 2025</strong>
+          <span>Membedakan konteks Pekerja Jasa Konstruksi/proyek dari kepesertaan Penerima Upah biasa.</span>
+          <div class="legal-links">
+            <a href="https://jdih.kemnaker.go.id/asset/data_puu/21permenaker005.pdf" target="_blank" rel="noopener noreferrer">Permenaker 5/2021 PDF ↗</a>
+            <a href="https://jdih.kemnaker.go.id/asset/data_puu/2025pmnaker001.pdf" target="_blank" rel="noopener noreferrer">Permenaker 1/2025 PDF ↗</a>
+          </div>
+        </div>
+      </div>
+    </details>
+
+    <div class="branch-grid">
+      <button class="branch-card" onclick="openJakon()">
+        <strong>Tenaga kerja proyek konstruksi</strong>
+        <span>Harian lepas, borongan, musiman, atau tenaga kerja yang bekerja pada proyek konstruksi. Perhitungan memakai skema Jasa Konstruksi.</span>
+      </button>
+      <button class="branch-card" onclick="routeConstructionToPU()">
+        <strong>Karyawan tetap perusahaan konstruksi</strong>
+        <span>Misalnya staf administrasi, finance, HR, supervisor tetap, dan karyawan badan usaha. Perhitungan dilanjutkan sebagai Penerima Upah.</span>
+      </button>
+    </div>
+  </section>
+
+  <section id="jakonView" class="hidden sim-view">
+    <button type="button" class="backbtn" onclick="showView('constructionGate')">← Kembali</button>
+    <div class="eyebrow">Simulator Jasa Konstruksi</div>
+    <h1>Hitung iuran proyek konstruksi</h1>
+    <div class="lead">Pilih dasar perhitungan yang tersedia pada proyek. Simulator ini menghitung JKK dan JKM untuk kepesertaan Jasa Konstruksi.</div>
+
+    <div class="card">
+      <div class="section-title"><span class="num">1</span><div>Dasar perhitungan<small>Pilih yang datanya tersedia pada proyek</small></div></div>
+      <div class="pillset two" role="radiogroup" aria-label="Dasar perhitungan">
+        <label class="pill"><input type="radio" name="jakonBasis" value="contract" checked onchange="updateJakonBasis()"><span><b>Nilai proyek</b><small>Sesuai SPK/kontrak, termasuk PPN · tarif progresif</small></span></label>
+        <label class="pill"><input type="radio" name="jakonBasis" value="wage" onchange="updateJakonBasis()"><span><b>Total upah sebulan</b><small>Bila komponen upah pekerja diketahui</small></span></label>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="section-title"><span class="num">2</span><div>Masukkan nilai<small>Angka dirapikan otomatis saat diketik</small></div></div>
+      <div id="jakonContractWrap">
+        <label for="jakonContract" class="lbl">Nilai proyek termasuk PPN</label>
+        <div class="money"><span class="pre">Rp</span><input id="jakonContract" inputmode="numeric" autocomplete="off" placeholder="111.000.000" oninput="formatJakonMoney(this);clearErr('jakonContract')"></div>
+        <div id="jakonContractError" class="error-msg">Masukkan nilai proyek termasuk PPN.</div>
+        <div class="helper">Masukkan nilai proyek seperti yang tercantum pada SPK/kontrak. Prototype mengikuti tampilan E‑Jakon resmi dengan PPN 11%, lalu mengubahnya otomatis menjadi nilai sebelum PPN sebagai dasar iuran.</div>
+      </div>
+      <div id="jakonWageWrap" class="hidden">
+        <label for="jakonWage" class="lbl">Total upah pekerja <u>sebulan</u> <span class="unit-flag">per bulan</span></label>
+        <div class="money"><span class="pre">Rp</span><input id="jakonWage" inputmode="numeric" autocomplete="off" placeholder="10.000.000" oninput="formatJakonMoney(this);clearErr('jakonWage')"><span class="suf">/ bulan</span></div>
+        <div id="jakonWageError" class="error-msg">Masukkan total upah pekerja sebulan.</div>
+        <div class="helper">Jumlah upah seluruh pekerja proyek dalam satu bulan (bukan upah harian). JKK 1,74% dan JKM 0,30% dari total upah sebulan.</div>
+      </div>
+      <button class="primary full" style="margin-top:16px" onclick="calculateJakon()">Hitung iuran Jakon</button>
+    </div>
+    <div class="jakon-extra">
+      <details class="legal-box">
+        <summary>Dasar hukum perhitungan Jasa Konstruksi</summary>
+        <div class="legal-content">
+          <div class="legal-item">
+            <strong>Permenaker Nomor 5 Tahun 2021 jo. Permenaker Nomor 1 Tahun 2025</strong>
+            <span>Mengatur tata cara kepesertaan Jasa Konstruksi serta dasar iuran JKK dan JKM untuk pekerja proyek.</span>
+            <div class="legal-links">
+              <a href="https://jdih.kemnaker.go.id/asset/data_puu/21permenaker005.pdf" target="_blank" rel="noopener noreferrer">Permenaker 5/2021 PDF ↗</a>
+              <a href="https://jdih.kemnaker.go.id/asset/data_puu/2025pmnaker001.pdf" target="_blank" rel="noopener noreferrer">Permenaker 1/2025 PDF ↗</a>
+            </div>
+          </div>
+          <div class="legal-item">
+            <strong>PP Nomor 44 Tahun 2015 sebagaimana diubah dengan PP Nomor 82 Tahun 2019 dan PP Nomor 49 Tahun 2023</strong>
+            <span>Kerangka penyelenggaraan Program JKK dan JKM yang menjadi dasar perlindungan pekerja Jasa Konstruksi.</span>
+            <div class="legal-links">
+              <a href="https://peraturan.bpk.go.id/Download/28927/PP%20Nomor%2044%20Tahun%202015.pdf" target="_blank" rel="noopener noreferrer">PP 44/2015 PDF ↗</a>
+              <a href="https://peraturan.bpk.go.id/Download/323386/PP%20Nomor%2049%20Tahun%202023.pdf" target="_blank" rel="noopener noreferrer">PP 49/2023 PDF ↗</a>
+            </div>
+          </div>
+        </div>
+      </details>
+      <details class="legal-box">
+        <summary>Cek / cetak kuitansi iuran proyek di E‑Jakon</summary>
+        <div class="legal-content">
+          <div class="legal-item">
+            <strong>Layanan resmi E‑Jakon BPJS Ketenagakerjaan</strong>
+            <span>Kuitansi iuran proyek dicek dan dicetak di E‑Jakon resmi. Website ini tidak membuat atau menyimpan kuitansi.</span>
+            <div class="legal-links">
+              <a data-link="ejakonKuitansi" href="https://ejakon.bpjsketenagakerjaan.go.id/cek-kuitansi" target="_blank" rel="noopener noreferrer">Buka Cek Kuitansi di E‑Jakon ↗</a>
+            </div>
+          </div>
+        </div>
+      </details>
+    </div>
+  </section>
+
+  <section id="jakonResultView" class="hidden sim-view">
+    <button type="button" class="backbtn" onclick="showView('jakon')">← Ubah data proyek</button>
+    <div class="rs-head">
+      <div class="step-kicker">Hasil simulasi · Jasa Konstruksi</div>
+      <h1>Perkiraan iuran proyek konstruksi</h1>
+    </div>
+    <div id="rsJakon"></div>
+      <details class="legal-box">
+        <summary>Dasar hukum perhitungan Jasa Konstruksi</summary>
+        <div class="legal-content">
+          <div class="legal-item">
+            <strong>Permenaker Nomor 5 Tahun 2021 jo. Permenaker Nomor 1 Tahun 2025</strong>
+            <span>Mengatur tata cara kepesertaan Jasa Konstruksi serta dasar iuran JKK dan JKM untuk pekerja proyek.</span>
+            <div class="legal-links">
+              <a href="https://jdih.kemnaker.go.id/asset/data_puu/21permenaker005.pdf" target="_blank" rel="noopener noreferrer">Permenaker 5/2021 PDF ↗</a>
+              <a href="https://jdih.kemnaker.go.id/asset/data_puu/2025pmnaker001.pdf" target="_blank" rel="noopener noreferrer">Permenaker 1/2025 PDF ↗</a>
+            </div>
+          </div>
+          <div class="legal-item">
+            <strong>PP Nomor 44 Tahun 2015 sebagaimana diubah dengan PP Nomor 82 Tahun 2019 dan PP Nomor 49 Tahun 2023</strong>
+            <span>Kerangka penyelenggaraan Program JKK dan JKM yang menjadi dasar perlindungan pekerja Jasa Konstruksi.</span>
+            <div class="legal-links">
+              <a href="https://peraturan.bpk.go.id/Download/28927/PP%20Nomor%2044%20Tahun%202015.pdf" target="_blank" rel="noopener noreferrer">PP 44/2015 PDF ↗</a>
+              <a href="https://peraturan.bpk.go.id/Download/323386/PP%20Nomor%2049%20Tahun%202023.pdf" target="_blank" rel="noopener noreferrer">PP 49/2023 PDF ↗</a>
+            </div>
+          </div>
+        </div>
+      </details>
+      <details class="legal-box">
+        <summary>Cek / cetak kuitansi iuran proyek di E‑Jakon</summary>
+        <div class="legal-content">
+          <div class="legal-item">
+            <strong>Layanan resmi E‑Jakon BPJS Ketenagakerjaan</strong>
+            <span>Kuitansi iuran proyek dicek dan dicetak di E‑Jakon resmi. Website ini tidak membuat atau menyimpan kuitansi.</span>
+            <div class="legal-links">
+              <a data-link="ejakonKuitansi" href="https://ejakon.bpjsketenagakerjaan.go.id/cek-kuitansi" target="_blank" rel="noopener noreferrer">Buka Cek Kuitansi di E‑Jakon ↗</a>
+            </div>
+          </div>
+        </div>
+      </details>
+
+    <div class="next-panel">
+      <h3>Ingin mendaftarkan proyek?</h3>
+      <p>Lanjutkan ke E‑Jakon resmi, atau minta dihubungi petugas lewat Konsultasi Langsung bila perlu bantuan proses pendaftaran.</p>
+      <div class="next-grid">
+        <a class="go" data-link="ejakon" href="https://ejakon.bpjsketenagakerjaan.go.id/" target="_blank" rel="noopener noreferrer">Buka E‑Jakon resmi ↗</a>
+        <button type="button" class="chat" onclick="openWhatsApp('jakon')">Konsultasi Langsung</button>
+      </div>
+      <div class="next-note">Pendaftaran dan transaksi tetap dilakukan melalui kanal resmi BPJS Ketenagakerjaan.</div>
+    </div>
+  </section>
+
+  <section id="resultView" class="hidden sim-view">
+    <button type="button" class="backbtn" onclick="goBackToSimulator()">← Ubah data simulasi</button>
+    <div class="rs-head">
+      <div class="step-kicker">Hasil simulasi · Penerima Upah</div>
+      <h1>Perkiraan iuran perusahaan</h1>
+    </div>
+    <div id="rsPu"></div>
+
+      <details class="legal-box">
+        <summary>Dasar hukum perhitungan PU</summary>
+        <div class="legal-content">
+          <div class="legal-item">
+            <strong>JKK & JKM — PP Nomor 44 Tahun 2015, sebagaimana diubah terakhir dengan PP Nomor 49 Tahun 2023</strong>
+            <span>Dasar penyelenggaraan JKK/JKM. Kelompok risiko merujuk Lampiran I PP Nomor 82 Tahun 2019.</span>
+            <div class="legal-links">
+              <a href="https://peraturan.bpk.go.id/Download/28927/PP%20Nomor%2044%20Tahun%202015.pdf" target="_blank" rel="noopener noreferrer">PP 44/2015 PDF ↗</a>
+              <a href="https://peraturan.bpk.go.id/Download/323386/PP%20Nomor%2049%20Tahun%202023.pdf" target="_blank" rel="noopener noreferrer">PP 49/2023 PDF ↗</a>
+              <a href="https://peraturan.bpk.go.id/Download/118686/PP%20Nomor%2082%20Tahun%202019%20-%20Lamp%20I.pdf" target="_blank" rel="noopener noreferrer">Lampiran Risiko PP 82/2019 ↗</a>
+            </div>
+          </div>
+          <div class="legal-item">
+            <strong>JHT — PP Nomor 46 Tahun 2015 jo. PP Nomor 60 Tahun 2015</strong>
+            <span>Dasar penyelenggaraan Program Jaminan Hari Tua.</span>
+            <div class="legal-links">
+              <a href="https://peraturan.bpk.go.id/Download/28934/PP%20Nomor%2046%20Tahun%202015.pdf" target="_blank" rel="noopener noreferrer">PP 46/2015 PDF ↗</a>
+              <a href="https://peraturan.bpk.go.id/Download/29100/PP%20Nomor%2060%20Tahun%202015.pdf" target="_blank" rel="noopener noreferrer">PP 60/2015 PDF ↗</a>
+            </div>
+          </div>
+          <div class="legal-item">
+            <strong>JP — PP Nomor 45 Tahun 2015</strong>
+            <span>Dasar penyelenggaraan Program Jaminan Pensiun, termasuk mekanisme iuran dan batas upah.</span>
+            <div class="legal-links"><a href="https://peraturan.bpk.go.id/Download/28931/PP%20Nomor%2045%20Tahun%202015.pdf" target="_blank" rel="noopener noreferrer">PP 45/2015 PDF ↗</a></div>
+          </div>
+          <div class="legal-item">
+            <strong>JKP — PP Nomor 6 Tahun 2025</strong>
+            <span>Perubahan atas PP Nomor 37 Tahun 2021, termasuk iuran JKP dan rekomposisi JKK.</span>
+            <div class="legal-links"><a href="https://peraturan.bpk.go.id/Download/375603/PP%20Nomor%206%20Tahun%202025.pdf" target="_blank" rel="noopener noreferrer">PP 6/2025 PDF ↗</a></div>
+          </div>
+          <div class="legal-item">
+            <strong>Tata cara penyelenggaraan — Permenaker Nomor 5 Tahun 2021 jo. Permenaker Nomor 1 Tahun 2025</strong>
+            <span>Pedoman teknis kepesertaan dan tata cara penyelenggaraan JKK, JKM, dan JHT.</span>
+            <div class="legal-links">
+              <a href="https://jdih.kemnaker.go.id/asset/data_puu/21permenaker005.pdf" target="_blank" rel="noopener noreferrer">Permenaker 5/2021 PDF ↗</a>
+              <a href="https://jdih.kemnaker.go.id/asset/data_puu/2025pmnaker001.pdf" target="_blank" rel="noopener noreferrer">Permenaker 1/2025 PDF ↗</a>
+            </div>
+          </div>
+        </div>
+      </details>
+
+    <div class="next-panel">
+      <h3>Sudah siap? Lanjutkan bersama Petugas BPJS Ketenagakerjaan.</h3>
+      <p>Tinggalkan nomor HP lewat Konsultasi Langsung: petugas membantu pendaftaran, administrasi perusahaan, atau pertanyaan lanjutan. Ringkasan simulasi ini ikut terkirim, tanpa data pribadi.</p>
+      <div class="next-grid">
+        <a class="go" data-link="daftarPu" href="https://www.bpjsketenagakerjaan.go.id/cara-mendaftar-jadi-peserta.html" target="_blank" rel="noopener noreferrer">Daftar melalui kanal resmi ↗</a>
+        <button type="button" class="chat" onclick="openWhatsApp('pu')">Konsultasi Langsung</button>
+      </div>
+      <div class="next-note">Website tidak meminta NIK, OTP, kata sandi, atau pembayaran.</div>
+    </div>
+  </section>
+
+  <div class="page-footnote">
+    Prototype edukasi. Hasil pencarian jenis usaha merupakan alat bantu identifikasi, bukan penetapan resmi klasifikasi/kode. Kamus kata kunci v0.3.0 berstatus draf dan perlu ditinjau petugas. Nilai simulasi merupakan estimasi dan harus diverifikasi kembali terhadap ketentuan yang berlaku sebelum produksi.
+  </div>
+</div>
+
+<script src="data/kamus-usaha-pu.js"></script>
+<script src="assets/js/finder-engine.js"></script>
+<script src="assets/js/sim-report.js"></script>
+<script>
+const DB=window.KAMUS_USAHA_PU;
+
+const CONFIG={
+  jpCeiling:11086300,
+  jkpCeiling:5000000,
+  riskRates:{
+    1:{label:"Sangat rendah",rate:0.0024},
+    2:{label:"Rendah",rate:0.0054},
+    3:{label:"Sedang",rate:0.0089},
+    4:{label:"Tinggi",rate:0.0127},
+    5:{label:"Sangat tinggi",rate:0.0174}
+  },
+  rates:{jkm:0.003,jhtEmployer:0.037,jhtWorker:0.02,jpEmployer:0.02,jpWorker:0.01,jkpGov:0.0022,jkpJkkRecomp:0.0014},
+  /* batas bawah upah SEBULAN yang bisa disimulasikan — diatur di assets/js/site-config.js (simulasi.minUpahPU) */
+  minWage:((window.SITE_CONFIG||{}).simulasi||{}).minUpahPU||0
+};
+
+let selectedBusiness=null,selectedViaInferred=false;
+
+/* Mesin pencarian: assets/js/finder-engine.js · Kamus: data/kamus-usaha-pu.js */
+
+/* UI:START — Business Finder UI v0.7 */
+const eng=createFinderEngine(DB);
+const LINKS={bpu:SH.url('bpu'),pmi:SH.url('pmi')};
+const PARAMS=new URLSearchParams(location.search);
+const KURATOR=PARAMS.has('kurator');
+const ROMAN=['','I','II','III','IV','V'];
+let lastRes=null,lastQuery='',searchLog=[],sugItems=[],sugIdx=-1,sugTimer=null;
+const $=id=>document.getElementById(id);
+function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
+function pct(e){return String(e.jkk_percent).replace('.',',');}
+function groupChip(e){return `<span class="gchip g${e.group}">Kelompok ${ROMAN[e.group]} · ${esc(e.risk_label)} · JKK ${pct(e)}</span>`;}
+function examplesOf(e,n){
+  const seen=new Set(),out=[];
+  for(const a of (e.aliases||[])){ const k=eng.canon(a).join(' '); if(!k||seen.has(k)) continue; seen.add(k); out.push(a); if(out.length>=(n||4)) break; }
+  return out;
+}
+function shortName(s,n){n=n||60;return s.length>n?s.slice(0,n-1)+'…':s;}
+function dbg(x){
+  if(!KURATOR||!x||!x.parts) return '';
+  const p=x.parts,f=v=>(v>0?'+':'')+v;
+  return `skor ${x.score} · frasa ${p.phrase||0} · token ${p.token||0}`+(p.activity?` · kegiatan ${f(p.activity)}`:'')+(p.negative?` · pembeda ${p.negative}`:'')+(p.inferred?` · inferensi ${p.inferred}`:'')+(p.confirm?` · konfirmasi ${p.confirm}`:'')+` · ${x.e.id}`;
+}
+function entryCard(e,o){
+  o=o||{};
+  const ex=examplesOf(e,4);
+  return `<article class="card bcard${o.main?' main':''}">
+    <div class="bcard-top"><span class="badge${o.main?'':' alt'}">${esc(o.badge||(o.main?'Kandidat utama':'Alternatif'))}</span>${groupChip(e)}</div>
+    <h3 class="bname">${esc(e.official_name)}</h3>
+    ${ex.length?`<div class="bex">Contoh: ${ex.map(esc).join(', ')}</div>`:''}
+    ${o.label?`<div class="bmatch">Dikenali dari kata: <b>${esc(o.label)}</b></div>`:''}
+    ${o.viaInferred?`<div class="binfer">Jenis usaha ini tidak disebut langsung di Lampiran I, jadi yang ditampilkan adalah kategori terdekat. Minta petugas mengonfirmasi saat mendaftar.</div>`:(e.needs_confirmation?`<div class="binfer soft">Kategori ini perlu dikonfirmasi sesuai kegiatan utama usaha.</div>`:'')}
+    ${o.debug?`<div class="kdebug">${esc(o.debug)}</div>`:''}
+    <button type="button" class="${o.main?'primary':'secondary'} full" data-sim="${e.id}">Hitung iuran →</button>
+  </article>`;
+}
+function legalHtml(){
+  return `<details class="legal-box">
+      <summary>Dasar kategori & tingkat risiko</summary>
+      <div class="legal-content">
+        <div class="legal-item"><strong>PP Nomor 82 Tahun 2019 — Lampiran I</strong><span>Pembagian kelompok tingkat risiko lingkungan kerja yang digunakan Business Finder. Kamus kata kunci hanya alat bantu pencarian, bukan penetapan resmi.</span>
+          <div class="legal-links"><a href="https://peraturan.bpk.go.id/Download/118686/PP%20Nomor%2082%20Tahun%202019%20-%20Lamp%20I.pdf" target="_blank" rel="noopener noreferrer">Buka / unduh PDF resmi ↗</a></div></div>
+        <div class="legal-item"><strong>PP Nomor 49 Tahun 2023</strong><span>Perubahan kedua atas PP Nomor 44 Tahun 2015. Mengubah sejumlah pasal (antara lain kepesertaan dan rekomposisi iuran untuk JKP), tetapi tidak mengubah Lampiran I.</span>
+          <div class="legal-links"><a href="https://peraturan.bpk.go.id/Download/323386/PP%20Nomor%2049%20Tahun%202023.pdf" target="_blank" rel="noopener noreferrer">Buka / unduh PDF resmi ↗</a></div></div>
+      </div>
+    </details>`;
+}
+function hintsHtml(res){
+  let h='';
+  for(const x of (res.hints||[])){
+    const cta=x.target==='jakon'?`<button type="button" class="outline" data-jakon="1">${esc(x.cta)} →</button>`:`<a class="hint-cta" href="${esc(LINKS[x.target]||'#')}">${esc(x.cta)} →</a>`;
+    h+=`<div class="hint"><strong>${esc(x.title)}</strong><span>${esc(x.message)}</span>${cta}</div>`;
+  }
+  for(const t of (res.tips||[])) h+=`<div class="tip"><strong>Tips:</strong> ${esc(t.message)}</div>`;
+  return h;
+}
+function answerHtml(res){
+  const c=res.candidates,top=c[0];let h='';
+  const allSame=c.length>1&&c.every(x=>x.e.group===top.e.group);
+  const gTxt=`Kelompok ${ROMAN[top.e.group]} (JKK ${esc(pct(top.e))})`;
+  if(res.status==='strong') h+=`<div class="res-head ok"><strong>Kecocokan kuat</strong><span>Pastikan kategori ini sesuai kegiatan utama usaha Anda.${allSame?` Kategori lain di bawah juga ${gTxt}, jadi tarif simulasi sama.`:''}</span></div>`;
+  else if(res.status==='consensus'||allSame) h+=`<div class="res-head ok"><strong>Tarif JKK sama untuk semua kandidat</strong><span>Beberapa kategori cocok, tetapi semuanya berada di ${gTxt}. Hasil simulasi tidak berubah, apa pun kategori yang dipilih.</span></div>`;
+  else h+=`<div class="res-head warn"><strong>Perlu konfirmasi</strong><span>Kecocokan belum kuat. Pilih kategori yang paling sesuai, atau jelajahi daftar bidang usaha di bawah.</span></div>`;
+  h+=entryCard(top.e,{main:true,label:top.label,viaInferred:top.viaInferred,debug:dbg(top)});
+  const rest=c.slice(1);
+  if(rest.length) h+=`<details class="alt-box"${res.status==='weak'?' open':''}><summary>Kategori lain yang mungkin (${rest.length})</summary>${rest.map(x=>entryCard(x.e,{label:x.label,viaInferred:x.viaInferred,debug:dbg(x)})).join('')}</details>`;
+  return h;
+}
+function questionHtml(res){
+  const q=res.question;
+  let h=`<div class="card question"><div class="q-kicker">Satu pertanyaan lagi</div><div class="title">${esc(q.title)}</div>`;
+  if(q.type==='pick'){
+    h+=`${q.note?`<div class="note q-note">${esc(q.note)}</div>`:''}</div>`;
+    return h+q.options.map(o=>{const x=res.candidates.find(c=>c.e.id===o.entry);return entryCard(eng.byId(o.entry),{badge:'Pilihan',label:x&&x.label,viaInferred:x&&x.viaInferred,debug:dbg(x)});}).join('');
+  }
+  h+=`<div class="options">${q.options.map(o=>`<button type="button" class="option" data-opt="${o.index}"><span>${esc(o.label)}</span>${o.example?`<small>mis. ${esc(o.example)}</small>`:''}</button>`).join('')}</div>`;
+  if(q.note) h+=`<div class="note q-note">${esc(q.note)}</div>`;
+  if(KURATOR) h+=`<div class="kdebug">aturan: ${esc(q.rule)}</div>`;
+  h+=`</div>`;
+  if(res.candidates.length) h+=`<details class="alt-box"><summary>Lewati pertanyaan, lihat semua kandidat (${res.candidates.length})</summary>${res.candidates.map(x=>entryCard(x.e,{label:x.label,viaInferred:x.viaInferred,debug:dbg(x)})).join('')}</details>`;
+  return h;
+}
+function noneHtml(res){
+  if(res.hints&&res.hints.length) return `<div class="card note">Tidak ada kategori Penerima Upah yang cocok untuk “${esc(res.query)}”. Bila Anda mendaftarkan karyawan sebuah perusahaan, ketik kegiatan usahanya, atau <button type="button" class="linkbtn" data-open-browse="1">jelajahi bidang usaha</button>.</div>`;
+  return `<div class="card"><div class="title">Belum ada kategori yang cocok untuk “${esc(res.query)}”.</div>
+    <p class="note">Coba kata lain yang lebih umum, misalnya jenis produk atau layanannya. Anda juga bisa menjelajahi daftar bidang usaha atau bertanya kepada petugas.</p>
+    <div class="action-row"><button type="button" class="secondary" data-open-browse="1">Jelajahi bidang usaha</button><button type="button" class="outline" data-wa-finder="1">Konsultasi Langsung</button></div></div>`;
+}
+function renderResults(res){
+  lastRes=res;
+  const out=$('finderResults');
+  let h='';
+  if(res.corrected&&res.corrected.length) h+=`<div class="fix-note">Menampilkan hasil untuk <b>${esc(res.analysis.toks.join(' '))}</b></div>`;
+  h+=hintsHtml(res);
+  switch(res.status){
+    case 'empty': h+=`<div class="card note">Ketik jenis usaha Anda, misalnya <b>warung kopi</b>, <b>bengkel las</b>, atau <b>toko bangunan</b>.</div>`; break;
+    case 'generic': h+=`<div class="card"><div class="title">${esc(res.generic.message)}</div><div class="chips">${res.generic.examples.map(x=>`<button type="button" class="chip" data-demo="${esc(x)}">${esc(x)}</button>`).join('')}</div></div>`; break;
+    case 'route': if(KURATOR) logSearch(res); showView('constructionGate'); return;
+    case 'none': h+=noneHtml(res); break;
+    case 'question': h+=questionHtml(res)+legalHtml(); break;
+    default: h+=answerHtml(res)+legalHtml();
+  }
+  out.innerHTML=h;
+  if(KURATOR) logSearch(res);
+}
+function renderSelected(id,o){
+  o=o||{};const e=eng.byId(id);if(!e) return;
+  const cand=((lastRes&&lastRes.candidates)||[]).find(x=>x.e.id===id);
+  let h='';
+  if(o.backToQuestion) h+=`<button type="button" class="linkbtn" data-back-q="1">← Ubah jawaban</button>`;
+  h+=`<div class="res-head ok"><strong>Kategori terpilih</strong><span>${esc(o.why||'')}</span></div>`;
+  h+=entryCard(e,{main:true,badge:'Kategori terpilih',label:cand&&cand.label,viaInferred:cand&&cand.viaInferred,debug:dbg(cand)});
+  const alts=(o.alts||[]).map(x=>eng.byId(x)).filter(Boolean);
+  if(alts.length) h+=`<details class="alt-box"><summary>Alternatif dalam pilihan ini (${alts.length})</summary>${alts.map(a=>entryCard(a,{})).join('')}</details>`;
+  h+=legalHtml();
+  $('finderResults').innerHTML=h;
+  scrollToResults();
+}
+function renderPick(ids){
+  let h=`<button type="button" class="linkbtn" data-back-q="1">← Ubah jawaban</button><div class="res-head warn"><strong>Tarif berbeda di dalam pilihan ini</strong><span>Pilih kategori yang paling mendekati kegiatan utama usaha Anda.</span></div>`;
+  h+=ids.map(id=>{const x=((lastRes&&lastRes.candidates)||[]).find(c=>c.e.id===id);return entryCard(eng.byId(id),{badge:'Pilihan',label:x&&x.label,viaInferred:x&&x.viaInferred,debug:dbg(x)});}).join('');
+  $('finderResults').innerHTML=h+legalHtml();
+  scrollToResults();
+}
+function chooseOption(index){
+  const r=eng.resolveOption(lastRes,index);if(!r) return;
+  if(r.action==='route_to_jasa_konstruksi_review'){showView('constructionGate');return;}
+  if(r.action==='continue_business_classification'){
+    renderResults(eng.search(lastQuery,{exclude:['G5-005'],skipRoute:true,skipRules:['construction_special_route','developer_property_vs_construction']}));
+    return;
+  }
+  if(r.pick){renderPick(r.pick);return;}
+  renderSelected(r.entry,{why:'Berdasarkan jawaban Anda.',alts:r.alternatives,backToQuestion:true});
+}
+function scrollToResults(){
+  const el=$('finderResults');if(!el) return;
+  const top=el.getBoundingClientRect().top+window.scrollY-12;
+  if(el.getBoundingClientRect().top>window.innerHeight*0.55||el.getBoundingClientRect().top<0) window.scrollTo({top,behavior:'smooth'});
+}
+function runSearch(q){
+  clearTimeout(sugTimer);
+  q=(q!=null?q:$('q').value).trim();hideSug();
+  if(!q){renderResults({status:'empty',hints:[],tips:[],corrected:[]});return;}
+  lastQuery=q;$('q').value=q;
+  const res=eng.search(q);
+  renderResults(res);
+  try{const u=new URL(location.href);u.searchParams.set('q',q);u.searchParams.delete('id');u.searchParams.delete('view');history.replaceState(null,'',u.toString());}catch(e){}
+  if(res.status!=='route'){$('q').blur();scrollToResults();}
+}
+/* ---------- saran (autocomplete) ---------- */
+function hl(label,q){
+  const L=label.toLowerCase(),k=q.trim().toLowerCase(),i=k?L.indexOf(k):-1;
+  if(i<0) return esc(label);
+  return esc(label.slice(0,i))+'<mark>'+esc(label.slice(i,i+k.length))+'</mark>'+esc(label.slice(i+k.length));
+}
+function showSuggestions(){
+  if(document.activeElement!==$('q')) return;
+  const q=$('q').value,list=eng.suggest(q,6),box=$('suggestions');
+  sugItems=list;sugIdx=-1;
+  if(!list.length){hideSug();return;}
+  box.innerHTML=list.map((x,i)=>`<button type="button" role="option" id="sug${i}" class="suggestitem" data-sug="${i}">${hl(x.label,q)}<span class="suggestsub">${x.multi?`${x.entries.length} kategori — akan ditanyakan setelah mencari`:esc(shortName(x.entries[0].official_name))}</span></button>`).join('');
+  box.style.display='block';$('q').setAttribute('aria-expanded','true');
+}
+function hideSug(){const b=$('suggestions');b.style.display='none';b.innerHTML='';$('q').setAttribute('aria-expanded','false');$('q').removeAttribute('aria-activedescendant');sugIdx=-1;}
+function moveSug(d){
+  if(!sugItems.length) return;
+  sugIdx=(sugIdx+d+sugItems.length)%sugItems.length;
+  document.querySelectorAll('#suggestions .suggestitem').forEach((b,i)=>b.classList.toggle('active',i===sugIdx));
+  $('q').setAttribute('aria-activedescendant','sug'+sugIdx);
+}
+/* ---------- jelajah bidang usaha ---------- */
+function renderSectors(){
+  $('browseSectors').innerHTML=eng.sectors.map(s=>`<button type="button" class="sector" data-sector="${s.id}"><span>${esc(s.label)}</span><small>${eng.sectorEntries(s.id).length} kategori</small></button>`).join('');
+}
+function kuratorEntryHtml(e){
+  const add=new Set((e.added_v0_3||[]).map(x=>x.toLowerCase()));
+  return `<div class="kentry"><div><b>${e.id}</b> · ${esc(e.sectors.join(', '))} · ${esc(e.activity.join(', '))} · ${esc(e.alias_review_status)}${e.ambiguity_tags.length?' · tag: '+esc(e.ambiguity_tags.join(', ')):''}</div>
+    <div>Alias: ${(e.aliases||[]).map(a=>add.has(a.toLowerCase())?`<span class="knew">${esc(a)}</span>`:esc(a)).join(', ')||'—'}</div>
+    ${(e.aliases_inferred||[]).length?`<div>Inferensi: ${e.aliases_inferred.map(esc).join(', ')}</div>`:''}
+    ${(e.negative_terms||[]).length?`<div>Pembeda: ${e.negative_terms.map(esc).join(', ')}</div>`:''}</div>`;
+}
+function renderSector(id){
+  const s=eng.sectors.find(x=>x.id===id);if(!s) return;
+  document.querySelectorAll('.sector').forEach(b=>b.classList.toggle('active',b.dataset.sector===id));
+  const list=eng.sectorEntries(id).slice().sort((a,b)=>a.group-b.group||a.official_name.localeCompare(b.official_name,'id'));
+  $('browseList').innerHTML=`<div class="browse-head"><strong>${esc(s.label)}</strong><button type="button" class="linkbtn" data-sector-close="1">Tutup</button></div>`+
+    list.map(e=>`<div class="brow"><div class="brow-main"><div class="brow-name">${esc(e.official_name)}</div><div class="brow-ex">${examplesOf(e,3).map(esc).join(', ')}</div>${groupChip(e)}${KURATOR?kuratorEntryHtml(e):''}</div><button type="button" class="secondary" data-select="${e.id}">Pilih</button></div>`).join('');
+  $('browseList').scrollIntoView({behavior:'smooth',block:'start'});
+}
+/* ---------- mode kurator ---------- */
+function logSearch(res){
+  searchLog.push({waktu:new Date().toLocaleTimeString('id-ID'),query:res.query||'',status:res.status,kandidat:(res.candidates&&res.candidates[0])?res.candidates[0].e.id:'',aturan:res.question?res.question.rule:''});
+  renderKuratorLog();
+}
+function renderKuratorLog(){
+  const el=$('kLog');if(!el) return;
+  el.innerHTML=searchLog.length?`<table class="ktable"><thead><tr><th>Waktu</th><th>Query</th><th>Status</th><th>Kandidat</th><th>Aturan</th></tr></thead><tbody>${searchLog.slice().reverse().map(r=>`<tr class="${r.status==='none'?'kmiss':''}"><td>${esc(r.waktu)}</td><td>${esc(r.query)}</td><td>${esc(r.status)}</td><td>${esc(r.kandidat)}</td><td>${esc(r.aturan)}</td></tr>`).join('')}</tbody></table>`:'<div class="note">Belum ada pencarian di sesi ini.</div>';
+}
+function renderKurator(){
+  const p=$('kuratorPanel');if(!KURATOR||!p) return;
+  const a=eng.audit();
+  const coll=a.collisions.filter(c=>c.groups.length>1);
+  p.classList.remove('hidden');
+  p.innerHTML=`<div class="k-head"><strong>Mode kurator</strong><span>Kamus v${esc(eng.version)} · ${a.entries} kategori</span></div>
+    <div class="kstat">
+      <div><span>Alias langsung</span><b>${a.aliases}</b></div><div><span>Alias inferensi</span><b>${a.inferred}</b></div><div><span>Kosakata token</span><b>${a.vocab}</b></div>
+      <div><span>Entri tanpa alias</span><b>${a.noAlias.length}</b></div><div><span>Status draft (perlu review)</span><b>${a.draft}</b></div><div><span>Alias dipakai >1 kelompok</span><b>${coll.length}</b></div>
+    </div>
+    ${coll.length?`<div class="note" style="margin-top:10px">Alias yang sama di kelompok berbeda (akan memicu pertanyaan): ${coll.map(c=>`<b>${esc(c.alias)}</b> (${c.ids.join(', ')})`).join('; ')}</div>`:''}
+    <div class="k-actions"><button type="button" class="secondary" data-k="tests">Jalankan uji regresi (${(DB.test_cases||[]).length} kasus)</button><button type="button" class="outline" data-k="copylog">Salin log pencarian (CSV)</button><button type="button" class="outline" data-k="download">Unduh kamus JSON</button></div>
+    <div id="kTests"></div>
+    <div class="k-sub">Log pencarian sesi ini</div><div id="kLog"></div>
+    <div class="note" style="margin-top:8px">Mode kurator hanya untuk tim penyusun kamus. Buka dengan menambahkan <code>?kurator=1</code> pada alamat halaman. Log tidak dikirim ke mana pun.</div>`;
+  renderKuratorLog();
+}
+function runKuratorTests(){
+  const r=eng.runTests(),f=r.results.filter(x=>!x.ok);
+  $('kTests').innerHTML=`<div class="res-head ${f.length?'warn':'ok'}" style="margin-top:12px"><strong>${r.passed}/${r.total} lulus</strong><span>${f.length?'Periksa kasus yang gagal di bawah.':'Semua kasus uji lulus.'}</span></div>`+
+    (f.length?`<table class="ktable"><thead><tr><th>Query</th><th>Harapan</th><th>Hasil</th></tr></thead><tbody>${f.map(x=>`<tr><td>${esc(x.q)}</td><td>${esc(JSON.stringify(Object.fromEntries(Object.entries(x.expect).filter(([k])=>k!=='q'))))}</td><td>${esc(x.why)}</td></tr>`).join('')}</tbody></table>`:'');
+}
+async function copyLog(){
+  const rows=[['waktu','query','status','kandidat','aturan']].concat(searchLog.map(r=>[r.waktu,r.query,r.status,r.kandidat,r.aturan]));
+  const csv=rows.map(r=>r.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\n');
+  try{await navigator.clipboard.writeText(csv);alert('Log disalin ('+searchLog.length+' baris).');}catch(e){alert(csv);}
+}
+function downloadKamus(){
+  const blob=new Blob([JSON.stringify(DB,null,1)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='kamus-usaha-pu-v'+eng.version+'.json';document.body.appendChild(a);a.click();
+  setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},500);
+}
+/* ---------- event ---------- */
+function bindFinder(){
+  const q=$('q');
+  q.addEventListener('input',()=>{clearTimeout(sugTimer);sugTimer=setTimeout(showSuggestions,60);});
+  q.addEventListener('keydown',e=>{
+    if(e.key==='ArrowDown'){e.preventDefault();moveSug(1);}
+    else if(e.key==='ArrowUp'){e.preventDefault();moveSug(-1);}
+    else if(e.key==='Escape'){hideSug();}
+    else if(e.key==='Enter'){e.preventDefault();if(sugIdx>=0&&sugItems[sugIdx]) runSearch(sugItems[sugIdx].label);else runSearch();}
+  });
+  $('searchBtn').addEventListener('click',()=>runSearch());
+  document.addEventListener('click',e=>{if(!e.target.closest('.searchwrap')) hideSug();});
+  $('finderView').addEventListener('click',e=>{
+    const t=e.target.closest('[data-sug],[data-demo],[data-sim],[data-opt],[data-select],[data-sector],[data-sector-close],[data-back-q],[data-open-browse],[data-jakon],[data-wa-finder],[data-k]');
+    if(!t) return;
+    const d=t.dataset;
+    if(d.sug!==undefined){runSearch(sugItems[+d.sug].label);}
+    else if(d.demo!==undefined){runSearch(d.demo);}
+    else if(d.sim){startSimulator(d.sim);}
+    else if(d.opt!==undefined){chooseOption(+d.opt);}
+    else if(d.select){renderSelected(d.select,{why:'Dipilih dari daftar bidang usaha.'});}
+    else if(d.sector){renderSector(d.sector);}
+    else if(d.sectorClose!==undefined){$('browseList').innerHTML='';document.querySelectorAll('.sector').forEach(b=>b.classList.remove('active'));}
+    else if(d.backQ!==undefined){renderResults(lastRes);scrollToResults();}
+    else if(d.openBrowse!==undefined){const b=$('browseBox');b.open=true;b.scrollIntoView({behavior:'smooth',block:'start'});}
+    else if(d.jakon!==undefined){showView('constructionGate');}
+    else if(d.waFinder!==undefined){openWhatsApp('finder');}
+    else if(d.k==='tests'){runKuratorTests();}
+    else if(d.k==='copylog'){copyLog();}
+    else if(d.k==='download'){downloadKamus();}
+  });
+  renderSectors();
+  renderKurator();
+  const q0=PARAMS.get('q'),id0=PARAMS.get('id');
+  const v0=PARAMS.get('view');
+  if(v0==='konstruksi'){showView('constructionGate');}
+  else if(v0==='jakon'){openJakon();}
+  else if(id0&&eng.byId(id0)){lastQuery='';renderSelected(id0,{why:'Dibuka dari tautan langsung.'});}
+  else if(q0){runSearch(q0);}
+}
+/* UI:END */
+
+let lastCalc=null,lastJakon=null;
+
+function clearErr(id){const f=document.getElementById(id),e=document.getElementById(id+'Error');if(f){f.classList.remove('field-error');const m=f.closest('.money');if(m)m.classList.remove('field-error');}if(e)e.classList.remove('show');}
+function showErr(id){const f=document.getElementById(id),e=document.getElementById(id+'Error');if(f){f.classList.add('field-error');const m=f.closest('.money');if(m)m.classList.add('field-error');f.focus();f.scrollIntoView({behavior:'smooth',block:'center'});}if(e)e.classList.add('show');}
+/* pilihan pil: kelas .is-on untuk browser lama yang belum mendukung :has / :checked+span */
+function syncPills(root){(root||document).querySelectorAll('.pill input').forEach(i=>i.closest('.pill').classList.toggle('is-on',i.checked));}
+function scaleVal(){const el=document.querySelector('input[name="scale"]:checked');return el?el.value:'mediumlarge';}
+/* ---------- batas upah minimal: di bawahnya → Konsultasi Langsung / kantor cabang ---------- */
+function minNoteHtml(n,kind){
+  const min=rupiah(CONFIG.minWage),daily=n>0&&n<500000;
+  return `<strong>${SH.icon('alert','sm')}<span>${kind} di bawah ${min} belum dapat disimulasikan.</span></strong>`+
+    (daily?`<span>Angka ini seperti upah <b>harian</b>. Isi upah <b>sebulan</b>: upah per hari × jumlah hari kerja dalam sebulan.</span>`:'')+
+    `<span>Untuk konsultasi nilai upah, hubungi petugas atau datang ke kantor cabang terdekat.</span>`+
+    `<div class="min-actions"><button type="button" class="primary" data-sh-konsul="Konsultasi nilai upah — simulasi PU, upah dimasukkan ${esc(rupiah(n))}/bulan">${SH.icon('headset','sm')}Konsultasi Langsung</button><a href="${SH.url('kontak',null,'kantor')}">${SH.icon('pin','sm')}${esc(SH.officeShort())}</a></div>`;
+}
+function checkWageMin(force){
+  const n=parseMoney(document.getElementById('wage').value),box=document.getElementById('wageMin');
+  const low=CONFIG.minWage&&n>0&&n<CONFIG.minWage;
+  if(low&&(force||!box.classList.contains('hidden')||document.activeElement!==document.getElementById('wage'))){box.innerHTML=minNoteHtml(n,'Upah sebulan');box.classList.remove('hidden');}
+  else if(!low){box.classList.add('hidden');}
+  return !low;
+}
+function getCountMode(){
+  const el=document.querySelector('input[name="countMode"]:checked');
+  return el?el.value:'single';
+}
+function updateCountMode(){
+  const mode=getCountMode();
+  const wrap=document.getElementById('workersWrap');
+  if(mode==='multiple'){
+    wrap.classList.remove('hidden');
+    const w=document.getElementById('workers');
+    if(parseInt(w.value||'0',10)<2)w.value=2;
+  }else{
+    wrap.classList.add('hidden');
+    document.getElementById('workers').value=1;
+  }
+  syncPills(document.getElementById('simView'));
+  puLive();
+}
+function startSimulator(id){
+  selectedBusiness=eng.byId(id)||selectedBusiness;
+  if(!selectedBusiness)return;
+  document.getElementById('risk').value=String(selectedBusiness.group);
+  const cand=((lastRes&&lastRes.candidates)||[]).find(x=>x.e.id===id);
+  const note=(cand&&cand.viaInferred)?'<div class="banner-note">Kategori terdekat — konfirmasikan ke petugas saat mendaftar.</div>':'';
+  const g=selectedBusiness.group,bars=[1,2,3,4,5].map(i=>`<i class="${i<=g?'on g'+g:''}"></i>`).join('');
+  document.getElementById('businessBanner').innerHTML=`<span class="ic">${SH.icon('building')}</span>`+
+    `<div><small>Jenis usaha terpilih</small><strong>${esc(selectedBusiness.official_name)}</strong>`+
+    `<span class="riskmeter"><span class="bars" aria-hidden="true">${bars}</span>Kelompok ${ROMAN[g]} · risiko ${esc(String(selectedBusiness.risk_label||'').toLowerCase())} · JKK ${pct(selectedBusiness)}</span></div>`+
+    `<button type="button" class="change" onclick="goBackToFinder()">Ganti</button>${note}`;
+  selectedViaInferred=!!(cand&&cand.viaInferred);
+  showView('sim');
+  applyScaleRules();
+}
+function showView(view){
+  const views={
+    finder:document.getElementById('finderView'),
+    sim:document.getElementById('simView'),
+    result:document.getElementById('resultView'),
+    constructionGate:document.getElementById('constructionGateView'),
+    jakon:document.getElementById('jakonView'),
+    jakonResult:document.getElementById('jakonResultView')
+  };
+  Object.values(views).forEach(v=>v.classList.add('hidden'));
+  const target=views[view]||views.finder;
+  target.classList.remove('hidden');
+  target.classList.add('view-enter');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+function goBackToFinder(){showView('finder')}
+function goBackToSimulator(){showView('sim')}
+function rupiah(n){return new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR',maximumFractionDigits:0}).format(Math.round(n))}
+function parseMoney(v){return Number(String(v).replace(/[^\d]/g,''))||0}
+function formatLiveWage(){const el=document.getElementById('wage'),n=parseMoney(el.value);if(n)el.value=new Intl.NumberFormat('id-ID').format(n)}
+function applyScaleRules(){
+  const scale=scaleVal(),jht=document.getElementById('jht'),jp=document.getElementById('jp');
+  const a=document.getElementById('jhtNote'),b=document.getElementById('jpNote');
+  if(scale==='micro'){jht.checked=false;jht.disabled=false;jp.checked=false;jp.disabled=false;a.textContent='Tidak wajib untuk usaha mikro; boleh diikutkan.';b.textContent='Tidak wajib untuk usaha mikro; boleh diikutkan.'}
+  else if(scale==='small'){jht.checked=true;jht.disabled=true;jp.checked=false;jp.disabled=false;a.textContent='Wajib untuk usaha kecil.';b.textContent='Boleh diikutkan; wajib bagi usaha menengah dan besar.'}
+  else{jht.checked=true;jht.disabled=true;jp.checked=true;jp.disabled=true;a.textContent='Wajib untuk usaha menengah dan besar.';b.textContent='Wajib untuk usaha menengah dan besar.'}
+  syncProgRows();
+  syncPills(document.getElementById('simView'));
+  puLive();
+}
+function syncProgRows(){
+  [['jht','jhtRow'],['jp','jpRow']].forEach(([i,r])=>{const c=document.getElementById(i),row=document.getElementById(r);row.classList.toggle('is-locked',c.disabled);row.classList.toggle('is-on',c.checked);});
+}
+
+function findConstructionBusiness(){
+  return eng.byId('G5-005');
+}
+
+function routeConstructionToPU(){
+  const e=findConstructionBusiness();
+  if(!e){
+    alert('Klasifikasi usaha konstruksi belum ditemukan di master data.');
+    return;
+  }
+  selectedBusiness=e;
+  startSimulator(e.id);
+}
+
+function openJakon(){
+  updateJakonBasis();
+  showView('jakon');
+}
+
+function getJakonBasis(){
+  const el=document.querySelector('input[name="jakonBasis"]:checked');
+  return el?el.value:'contract';
+}
+
+function updateJakonBasis(){
+  const basis=getJakonBasis();
+  if(window.syncPills) syncPills(document.getElementById('jakonView'));
+  document.getElementById('jakonContractWrap').classList.toggle('hidden',basis!=='contract');
+  document.getElementById('jakonWageWrap').classList.toggle('hidden',basis!=='wage');
+}
+
+function formatJakonMoney(el){
+  const n=parseMoney(el.value);
+  if(n) el.value=new Intl.NumberFormat('id-ID').format(n);
+}
+
+function progressiveContribution(value, rates){
+  const bands=[
+    {cap:100000000, rate:rates[0], label:'Sampai Rp100 juta'},
+    {cap:500000000, rate:rates[1], label:'Di atas Rp100–500 juta'},
+    {cap:1000000000, rate:rates[2], label:'Di atas Rp500 juta–1 miliar'},
+    {cap:5000000000, rate:rates[3], label:'Di atas Rp1–5 miliar'},
+    {cap:Infinity, rate:rates[4], label:'Di atas Rp5 miliar'}
+  ];
+  let remaining=value, previous=0, total=0, parts=[];
+  for(const b of bands){
+    if(remaining<=0)break;
+    const width=b.cap===Infinity?remaining:Math.max(0,b.cap-previous);
+    const taxable=Math.min(remaining,width);
+    if(taxable>0){
+      const amount=taxable*b.rate;
+      total+=amount;
+      parts.push({label:b.label, base:taxable, rate:b.rate, amount});
+      remaining-=taxable;
+    }
+    previous=b.cap;
+  }
+  return {total,parts};
+}
+
+function pctID(r){return (r*100).toFixed(2).replace('.',',')+'%';}
+function calculateJakon(){
+  const basis=getJakonBasis();
+  let jkk=0,jkm=0,detail=[],masukan=[],sub='',disclaimer='',gross=0,value=0,wage=0;
+
+  if(basis==='contract'){
+    gross=parseMoney(document.getElementById('jakonContract').value);
+    if(gross<=0){showErr('jakonContract');return;}
+
+    const ppnRate=0.11;
+    value=gross/(1+ppnRate);
+
+    const jkkCalc=progressiveContribution(value,[0.0021,0.0017,0.0013,0.0011,0.0009]);
+    const jkmCalc=progressiveContribution(value,[0.0003,0.0002,0.0002,0.0001,0.0001]);
+    jkk=jkkCalc.total; jkm=jkmCalc.total;
+    detail=jkkCalc.parts.map((p,i)=>({
+      label:p.label,
+      base:p.base,
+      jkkRate:p.rate,
+      jkk:p.amount,
+      jkmRate:jkmCalc.parts[i]?.rate||0,
+      jkm:jkmCalc.parts[i]?.amount||0
+    }));
+    sub=`Dari nilai proyek ${rupiah(gross)} (termasuk PPN)`;
+    masukan=[['Dasar perhitungan','Nilai proyek'],['Nilai proyek termasuk PPN',rupiah(gross)],['Dasar hitung sebelum PPN 11%',rupiah(value)]];
+    disclaimer='Nilai yang dimasukkan termasuk PPN 11% mengikuti tampilan E‑Jakon resmi. Sistem mengeluarkan komponen PPN terlebih dahulu, kemudian menghitung iuran secara progresif atas nilai sebelum PPN.';
+  }else{
+    wage=parseMoney(document.getElementById('jakonWage').value);
+    if(wage<=0){showErr('jakonWage');return;}
+    jkk=wage*0.0174;
+    jkm=wage*0.0030;
+    detail=[{label:'Total upah pekerja sebulan',base:wage,jkkRate:0.0174,jkk,jkmRate:0.0030,jkm}];
+    sub=`Dari total upah pekerja ${rupiah(wage)} sebulan`;
+    masukan=[['Dasar perhitungan','Komponen upah'],['Total upah pekerja sebulan',rupiah(wage)]];
+    disclaimer='Jika komponen upah pekerja tercantum dan diketahui, JKK dihitung 1,74% dan JKM 0,30% dari upah sebulan.';
+  }
+  const contract=basis==='contract',unit=contract?'untuk nilai proyek ini':'per bulan';
+  lastJakon={basis,jkk,jkm,gross,value,wage};
+  const model={
+    kode:'Jakon',segmen:'Jasa Konstruksi',berkas:'simulasi-iuran-jakon',
+    label:'Total iuran JKK + JKM',total:jkk+jkm,sub,
+    split:[{label:'JKK',nilai:jkk},{label:'JKM',nilai:jkm}],
+    masukan,
+    program:[
+      {kode:'JKK',nama:'Jaminan Kecelakaan Kerja',ket:contract?'Tarif progresif per lapisan nilai proyek (0,21% s.d. 0,09%)':'1,74% dari total upah sebulan',nilai:jkk,unit},
+      {kode:'JKM',nama:'Jaminan Kematian',ket:contract?'Tarif progresif per lapisan nilai proyek (0,03% s.d. 0,01%)':'0,30% dari total upah sebulan',nilai:jkm,unit}
+    ],
+    programTotal:{label:'Total JKK + JKM',nilai:jkk+jkm,unit},
+    tabel:contract?{judul:'Cara hitung per lapisan nilai proyek',kolom:['Lapisan nilai · tarif JKK / JKM','Dasar','JKK','JKM'],
+      baris:detail.map(d=>[`${d.label} · ${pctID(d.jkkRate)} / ${pctID(d.jkmRate)}`,d.base,d.jkk,d.jkm])}:null,
+    catatan:[disclaimer,'Kuitansi iuran proyek dicek dan dicetak di E‑Jakon resmi. Website ini tidak membuat atau menyimpan kuitansi.'],
+    dasar:['Permenaker Nomor 5 Tahun 2021 jo. Permenaker Nomor 1 Tahun 2025 — kepesertaan Jasa Konstruksi dan dasar iuran JKK & JKM proyek','PP Nomor 44 Tahun 2015 sebagaimana diubah dengan PP Nomor 82 Tahun 2019 dan PP Nomor 49 Tahun 2023 — penyelenggaraan JKK & JKM'],
+    tautan:location.href.split(/[?#]/)[0]+'?view=jakon',ubah:()=>showView('jakon')
+  };
+  SHR.render(document.getElementById('rsJakon'),model);
+  showView('jakonResult');
+}
+
+/* hitung tanpa menampilkan (dipakai perkiraan langsung & tombol rincian) */
+function computePu(wage,workers){
+  const riskGroup=document.getElementById('risk').value;
+  const risk=CONFIG.riskRates[riskGroup];
+  const useJht=document.getElementById('jht').checked;
+  const useJp=document.getElementById('jp').checked;
+  const per=[];
+
+  const jkk=wage*risk.rate;
+  per.push(['JKK',jkk,0,jkk,`${(risk.rate*100).toFixed(2).replace('.',',')}%`]);
+
+  const jkm=wage*CONFIG.rates.jkm;
+  per.push(['JKM',jkm,0,jkm,'0,30%']);
+
+  if(useJht){
+    const e=wage*CONFIG.rates.jhtEmployer,w=wage*CONFIG.rates.jhtWorker;
+    per.push(['JHT',e,w,e+w,'3,70% + 2,00%']);
+  }
+
+  const jpBase=Math.min(wage,CONFIG.jpCeiling);
+  if(useJp){
+    const e=jpBase*CONFIG.rates.jpEmployer,w=jpBase*CONFIG.rates.jpWorker;
+    per.push(['JP',e,w,e+w,'2,00% + 1,00%']);
+  }
+
+  const employerPerPerson=per.reduce((s,x)=>s+x[1],0);
+  const workerPerPerson=per.reduce((s,x)=>s+x[2],0);
+
+  const jkpBase=Math.min(wage,CONFIG.jkpCeiling);
+  const jkpGov=jkpBase*CONFIG.rates.jkpGov;
+  const jkpRecomp=jkpBase*CONFIG.rates.jkpJkkRecomp;
+
+  return {wage,workers,per,employerPerPerson,workerPerPerson,risk,riskGroup,useJp,jkpGov,jkpRecomp};
+}
+function puWorkers(){return getCountMode()==='single'?1:Math.max(2,parseInt(document.getElementById('workers').value||'2',10));}
+function calculate(){
+  const wage=parseMoney(document.getElementById('wage').value);
+  const workers=puWorkers();
+  if(wage<=0){showErr('wage');return}
+  if(!checkWageMin(true)){const b=document.getElementById('wageMin');b.scrollIntoView({behavior:'smooth',block:'center'});return}
+  lastCalc=computePu(wage,workers);
+  SHR.render(document.getElementById('rsPu'),buildPuModel());
+  showView('result');
+}
+/* ---------- perkiraan langsung ---------- */
+let puLiveLast=null;
+function puLive(){
+  const amt=document.getElementById('puLiveAmt');if(!amt) return;
+  const sub=document.getElementById('puLiveSub'),split=document.getElementById('puLiveSplit');
+  const wage=parseMoney(document.getElementById('wage').value),n=puWorkers();
+  if(!wage||(CONFIG.minWage&&wage<CONFIG.minWage)){
+    amt.textContent=wage?'Upah terlalu kecil':'Isi upah sebulan';amt.classList.add('is-empty');
+    sub.textContent=CONFIG.minWage?`Perkiraan muncul otomatis. Minimal ${rupiah(CONFIG.minWage)} per bulan.`:'Perkiraan muncul otomatis.';
+    split.innerHTML='';puLiveLast=null;return;
+  }
+  const c=computePu(wage,n),per=c.employerPerPerson+c.workerPerPerson,total=per*n;
+  amt.classList.remove('is-empty');
+  if(puLiveLast!==total){amt.textContent=rupiah(total);amt.classList.remove('bump');void amt.offsetWidth;amt.classList.add('bump');puLiveLast=total;}
+  sub.textContent=n>1?`${n} pekerja · ${rupiah(per)} per pekerja · program ${c.per.map(x=>x[0]).join(', ')}`:`1 pekerja · program ${c.per.map(x=>x[0]).join(', ')}`;
+  split.innerHTML=`<span>Perusahaan <b>${rupiah(c.employerPerPerson*n)}</b></span><span>Dipotong dari upah <b>${rupiah(c.workerPerPerson*n)}</b></span>`;
+}
+
+/* Satu model hasil → tampilan layar, cetak, PDF, dan teks bagikan (assets/js/sim-report.js) */
+function buildPuModel(){
+  const c=lastCalc,n=c.workers,e=selectedBusiness;
+  const NAMA={JKK:'Jaminan Kecelakaan Kerja',JKM:'Jaminan Kematian',JHT:'Jaminan Hari Tua',JP:'Jaminan Pensiun'};
+  const SKALA={micro:'Mikro',small:'Kecil',mediumlarge:'Menengah / Besar'};
+  const perTotal=c.employerPerPerson+c.workerPerPerson,unit='per pekerja / bulan',tl=n>1?`${n} pekerja`:'';
+  const overJp=c.useJp&&c.wage>CONFIG.jpCeiling;
+  const prog=c.per.map(x=>({
+    kode:x[0],nama:NAMA[x[0]]||x[0],
+    ket:(x[2]?`${x[4]} dari upah (perusahaan + pekerja)`:`${x[4]} dari upah · dibayar perusahaan`)+(x[0]==='JP'&&overJp?' · dihitung dari batas upah JP':''),
+    rincian:x[2]?`Perusahaan ${rupiah(x[1])} · dipotong dari upah ${rupiah(x[2])}`:'',
+    nilai:x[3],unit,total:n>1?x[3]*n:null,totalLabel:tl
+  }));
+  const catatan=[];
+  if(overJp)catatan.push(`Upah melebihi batas dasar iuran JP. Iuran JP dihitung dari batas upah ${rupiah(CONFIG.jpCeiling)} (parameter 2026).`);
+  catatan.push(`JKP tidak menambah tagihan perusahaan atau pekerja. Ilustrasi per pekerja: Pemerintah ${rupiah(c.jkpGov)} + rekomposisi JKK ${rupiah(c.jkpRecomp)} = ${rupiah(c.jkpGov+c.jkpRecomp)}.`);
+  const banner=selectedViaInferred
+    ?{nada:'warn',judul:'Kategori usaha terdekat',teks:'Jenis usaha ini tidak disebut langsung di Lampiran I PP 82/2019. Minta petugas mengonfirmasi kelompok risikonya saat mendaftar.'}
+    :(e&&e.needs_confirmation?{nada:'info',judul:'Kelompok risiko perlu dikonfirmasi',teks:'Kategori ini bergantung pada kegiatan utama usaha. Petugas akan memastikannya saat pendaftaran.'}:null);
+  return {
+    kode:'PU',segmen:'Penerima Upah (PU)',berkas:'simulasi-iuran-pu',
+    label:n>1?`Total iuran per bulan · ${n} pekerja`:'Total iuran per bulan',
+    total:perTotal*n,sub:n>1?`${rupiah(perTotal)} per pekerja setiap bulan`:'untuk 1 pekerja',
+    split:[{label:'Dibayar perusahaan',nilai:c.employerPerPerson*n},{label:'Dipotong dari upah pekerja',nilai:c.workerPerPerson*n}],
+    banner,
+    masukan:[['Jenis usaha',e?e.official_name:'-'],['Kelompok risiko JKK',`Kelompok ${ROMAN[c.riskGroup]} · ${c.risk.label} · ${(c.risk.rate*100).toFixed(2).replace('.',',')}%`],
+      ['Skala usaha',SKALA[scaleVal()]||'-'],['Upah sebulan per pekerja',rupiah(c.wage)+' / bulan'],['Jumlah pekerja',n>1?`${n} orang (upah sama)`:'1 orang'],['Program',c.per.map(x=>x[0]).join(', ')]],
+    program:prog,programTotal:{label:n>1?`Total ${n} pekerja`:'Total per pekerja',nilai:perTotal*n,unit:'per bulan'},
+    catatan,
+    dasar:['PP Nomor 44 Tahun 2015 sebagaimana diubah terakhir dengan PP Nomor 49 Tahun 2023 — JKK & JKM','PP Nomor 82 Tahun 2019 Lampiran I — kelompok tingkat risiko lingkungan kerja','PP Nomor 46 Tahun 2015 jo. PP Nomor 60 Tahun 2015 — JHT','PP Nomor 45 Tahun 2015 — JP, termasuk batas upah','PP Nomor 6 Tahun 2025 — JKP dan rekomposisi JKK','Permenaker Nomor 5 Tahun 2021 jo. Permenaker Nomor 1 Tahun 2025 — tata cara penyelenggaraan'],
+    tautan:location.href.split(/[?#]/)[0]+(e?'?id='+encodeURIComponent(e.id):''),
+    ubah:goBackToSimulator
+  };
+}
+
+
+/* Nomor WhatsApp diatur di assets/js/site-config.js (contact.whatsappNumber) */
+function buildWhatsAppMessage(context){
+  if(context==='finder'){
+    return `Halo Pak/Bu, saya mencari jenis usaha "${lastQuery||''}" di Business Finder, tetapi belum menemukan kategori yang cocok. Mohon bantuannya untuk menentukan kelompok risiko.`;
+  }
+  if(context==='jakon'&&lastJakon){
+    const dasar=lastJakon.basis==='contract'?`Nilai proyek termasuk PPN: ${rupiah(lastJakon.gross)}`:`Total upah pekerja sebulan: ${rupiah(lastJakon.wage)}`;
+    return `Halo Pak/Bu, saya sudah mencoba simulasi Jasa Konstruksi di website.\n\n${dasar}\nEstimasi total iuran: ${rupiah(lastJakon.jkk+lastJakon.jkm)}\n\nSaya ingin dibantu untuk proses pendaftaran / konsultasi lebih lanjut.`;
+  }
+  const business=selectedBusiness?selectedBusiness.official_name:'';
+  const risk=selectedBusiness?`Kelompok ${selectedBusiness.group} - ${selectedBusiness.risk_label}`:'';
+  const total=lastCalc?rupiah((lastCalc.employerPerPerson+lastCalc.workerPerPerson)*lastCalc.workers):'';
+  return `Halo Pak/Bu, saya sudah mencoba simulasi Penerima Upah di website.\n\nJenis usaha: ${business}\n${lastQuery?'Kata kunci pencarian: '+lastQuery+'\n':''}Kelompok risiko: ${risk}\nEstimasi total iuran: ${total}${lastCalc&&lastCalc.workers>1?` (${lastCalc.workers} pekerja)`:''}\n\nSaya ingin dibantu untuk proses pendaftaran / konsultasi lebih lanjut.`;
+}
+
+function openWhatsApp(context){
+  SH.openWhatsApp(buildWhatsAppMessage(context));
+}
+
+formatLiveWage();
+updateJakonBasis();
+updateCountMode();
+applyScaleRules();
+bindFinder();
+/* pil skala usaha, sakelar program, dan tombol − / + jumlah pekerja */
+document.querySelectorAll('input[name="scale"]').forEach(r=>r.addEventListener('change',applyScaleRules));
+['jht','jp'].forEach(id=>document.getElementById(id).addEventListener('change',()=>{syncProgRows();puLive();}));
+document.getElementById('simView').addEventListener('click',e=>{
+  const b=e.target.closest('[data-stepper]');if(!b) return;
+  const w=document.getElementById('workers');w.value=Math.max(2,Math.min(9999,(parseInt(w.value||'2',10)||2)+Number(b.dataset.stepper)));puLive();
+});
+document.getElementById('workers').addEventListener('blur',e=>{if(getCountMode()==='multiple'&&(parseInt(e.target.value||'0',10)||0)<2){e.target.value=2;puLive();}});
+/* tombol "Chat petugas": WhatsApp bila nomor diisi, selain itu Konsultasi Langsung */
+document.querySelectorAll('.next-grid .chat').forEach(b=>{b.textContent=SH.hasWhatsApp()?'Chat Petugas (WhatsApp)':'Konsultasi Langsung';});
+syncPills(document.getElementById('jakonView'));
+document.querySelectorAll('#jakonView input[name="jakonBasis"]').forEach(r=>r.addEventListener('change',()=>syncPills(document.getElementById('jakonView'))));
+</script>
+
+<footer data-sh-footer></footer>
+<script>SH.crumbs([{label:'Simulasi', href:SH.url('simulasi')},{label:'Penerima Upah & Jasa Konstruksi'}]);</script>
+</body>
+</html>
