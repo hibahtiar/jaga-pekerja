@@ -5,6 +5,10 @@
    bpu-pekerjaan.js, atau kamus PU, agar arah pencarian tidak bergeser.
    ===================================================================== */
 window.UJI_PENCARIAN = [
+  { q:'bayar iuran',          top:'simulasi.html#bayar-iuran' },
+  { q:'qris',                 top:'simulasi.html#bayar-iuran' },
+  { q:'cara bayar bpjs',      top:'simulasi.html#bayar-iuran' },
+  { q:'kode iuran',           top:'simulasi.html#bayar-iuran' },
   { q:'ojol',                 top:'simulasi-bpu.html?pekerjaan=ojek-ojol' },
   { q:'guru ngaji',           top:'simulasi-bpu.html?pekerjaan=guru-ngaji' },
   { q:'bengkel las',          top:'simulasi-pu.html?q=bengkel' },

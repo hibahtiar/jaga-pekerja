@@ -8,7 +8,7 @@
    ===================================================================== */
 window.KONTEN = {
   version: '1.1.0',
-  diperbarui: '2026-09-26',
+  diperbarui: '2026-11-09',
 
   /* ---------------- Simulasi (hub) ---------------- */
   simulasi: {
@@ -35,6 +35,61 @@ window.KONTEN = {
         { label:'Saya (atau calon pekerja) akan bekerja ke luar negeri', ke:'pmi' }
       ]
     }
+  },
+
+  /* ---------------- Cara bayar iuran (tampil di simulasi.html#bayar-iuran) ----------------
+     Gambar langkah: assets/img/tutorial/bayar-*.webp (tangkapan layar ponsel, data penting sudah disamarkan).
+     Langkah dengan qris:true diberi tanda "QRIS". Untuk mengganti gambar, timpa berkas dengan nama yang sama. */
+  bayarIuran: {
+    status:'draf', diperiksa:'2026-11-09',
+    judul:'Cara bayar iuran lewat situs resmi',
+    ringkas:'Bayar iuran dari HP tanpa antre: cukup kode iuran dan aplikasi bank atau e-wallet yang mendukung QRIS.',
+    kanal:{ label:'Buka Kanal Pembayaran resmi', url:'https://www.bpjsketenagakerjaan.go.id/kanal-pembayaran.html' },
+    siapkan:[
+      'Kode iuran sesuai segmen (lihat format di bawah)',
+      'Aplikasi mobile banking atau e-wallet yang bisa memindai QRIS',
+      'Saldo cukup sesuai total iuran'
+    ],
+    kode:[
+      { segmen:'Penerima Upah (perusahaan)', format:'12 digit, diawali angka 4', contoh:'4XXXXXXXXXXX' },
+      { segmen:'Bukan Penerima Upah (mandiri)', format:'NIK pendaftar (16 digit KTP)', contoh:'NIK' },
+      { segmen:'BPU melalui wadah/kelompok', format:'16 digit, diawali 0626', contoh:'0626XXXXXXXXXXXX' },
+      { segmen:'Jasa Konstruksi', format:'12 digit, diawali angka 6', contoh:'6XXXXXXXXXXX' },
+      { segmen:'Pekerja Migran Indonesia', format:'ID billing 16 digit, diawali 0625', contoh:'0625XXXXXXXXXXXX' }
+    ],
+    langkah:[
+      { judul:'Buka Kanal Pembayaran resmi', gambar:'bayar-1-buka.webp',
+        teks:'Buka bpjsketenagakerjaan.go.id/kanal-pembayaran.html di browser HP. Pastikan alamatnya benar: bpjsketenagakerjaan.go.id.' },
+      { judul:'Masukkan kode iuran, tekan Bayar', gambar:'bayar-2-kode.webp',
+        teks:'Ketik kode iuran pada kolom "Masukkan Kode Iuran Anda", lalu tekan Bayar.' },
+      { judul:'Cocokkan data pembayaran', gambar:'bayar-3-cek.webp',
+        teks:'Periksa nama perusahaan/proyek, NPP, dan bulan iuran. Jika tidak sesuai, jangan lanjutkan dan periksa kembali kode iuran.' },
+      { judul:'Cek rincian dan total iuran', gambar:'bayar-4-total.webp',
+        teks:'Lihat rincian per program (JKK, JKM, JHT, JP) dan Total Iuran, lalu tekan "Pilih Metode Pembayaran".' },
+      { judul:'Pilih QRIS', gambar:'bayar-5-qris.webp', qris:true,
+        teks:'Pada bagian Pembayaran Instan, pilih QRIS. Satu kode QR bisa dibayar dari banyak aplikasi bank dan e-wallet.' },
+      { judul:'Tekan Bayar untuk membuat kode QR', gambar:'bayar-6-bayar.webp', qris:true,
+        teks:'Baca petunjuk singkat yang muncul, lalu tekan tombol hijau Bayar.' },
+      { judul:'Pindai QR, lalu cek status', gambar:'bayar-7-scan.webp', qris:true,
+        teks:'Pindai kode QR dengan aplikasi bank/e-wallet, periksa nama dan nominal, masukkan PIN. Setelah berhasil, tekan "Check Status Bayar".' }
+    ],
+    tipsQris:[
+      'Bayar dari HP yang sama? Simpan tangkapan layar kode QR, lalu di aplikasi bank/e-wallet pilih menu Scan/QRIS → ikon galeri untuk mengunggah gambar tersebut (tersedia di sebagian besar aplikasi).',
+      'Pastikan nominal di aplikasi sama dengan Total Iuran sebelum memasukkan PIN.',
+      'Simpan bukti bayar dari aplikasi bank/e-wallet. Jika pembayaran gagal atau kode QR tidak bisa dipindai, ulangi dari langkah 2 untuk membuat kode QR baru.'
+    ],
+    metodeLain:{
+      gambar:'bayar-metode-lain.webp',
+      teks:'Selain QRIS, halaman "Pilih Metode Pembayaran" juga menyediakan mobile banking, internet banking, dan bank kerja sama. Pilih bank Anda lalu ikuti petunjuk yang muncul.',
+      grup:[
+        { judul:'Mobile banking', isi:'BNI Mobile Banking, BSI Mobile Banking, Livin\' by Mandiri, Bank Jatim' },
+        { judul:'Internet banking', isi:'Internet Banking BRI, KlikBCA, OCTO Clicks, BNIDirect, Livin\' by Mandiri' },
+        { judul:'Bank kerja sama', isi:'Mandiri, BRI, BNI, BTN, dan lainnya' }
+      ],
+      catatan:'Daftar sesuai tampilan saat diperiksa (9 Nov 2026) dan dapat berubah sewaktu-waktu.'
+    },
+    keamanan:'Bayar hanya melalui situs resmi bpjsketenagakerjaan.go.id atau kanal resmi lainnya. Petugas tidak pernah meminta iuran ditransfer ke rekening pribadi. Jangan bagikan PIN atau OTP kepada siapa pun.',
+    sumber:[ { label:'Kanal Pembayaran Iuran BPJAMSOSTEK', url:'https://www.bpjsketenagakerjaan.go.id/kanal-pembayaran.html' } ]
   },
 
   /* ---------------- Pendaftaran ---------------- */

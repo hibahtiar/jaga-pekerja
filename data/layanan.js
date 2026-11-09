@@ -37,6 +37,10 @@ window.LAYANAN_INDEX = {
     /* ---- Simulasi ---- */
     { id:'sim', kat:'Simulasi', judul:'Simulasi Iuran', desc:'Pilih segmen: Penerima Upah, BPU, Jasa Konstruksi, atau PMI.', page:'simulasi',
       kata:['simulasi','simulasi iuran','hitung iuran','berapa iuran','kalkulator iuran','iuran','tarif iuran','biaya bpjs','cek iuran','besaran iuran'] },
+    { id:'bayar-iuran', kat:'Simulasi', judul:'Cara bayar iuran (QRIS)', desc:'Bayar iuran lewat situs resmi: masukkan kode iuran, pilih QRIS, pindai dengan aplikasi bank/e-wallet.', page:'simulasi', hash:'bayar-iuran', ikon:'wallet',
+      kata:['bayar iuran','cara bayar iuran','pembayaran iuran','cara pembayaran iuran','bayar bpjs','bayar bpjs ketenagakerjaan','cara bayar bpjs','bayar iuran bpjs','bayar jamsostek','bayar bpjamsostek',
+            'qris','bayar qris','bayar pakai qris','bayar iuran qris','bayar lewat hp','bayar online','bayar iuran online','kanal pembayaran','kode iuran','kode bayar','kode pembayaran','id billing',
+            'bayar iuran bpu','bayar iuran mandiri','bayar iuran perusahaan','bayar iuran karyawan','bayar iuran pmi','bayar iuran jakon','tagihan iuran','e-wallet','mobile banking','m-banking'] },
     { id:'sim-pu', kat:'Simulasi', judul:'Simulasi iuran perusahaan (PU)', desc:'Cari jenis usaha untuk menentukan kelompok risiko JKK, lalu hitung iuran karyawan.', page:'pu',
       kata:['simulasi pu','iuran pu','iuran perusahaan','iuran karyawan','hitung iuran karyawan','potongan gaji bpjs','potongan bpjs','potongan gaji','kelompok risiko','tingkat risiko','tarif jkk','iuran jht karyawan','iuran jp'] },
     { id:'sim-bpu', kat:'Simulasi', judul:'Simulasi iuran BPU (pekerja mandiri)', desc:'Untuk pekerja mandiri/informal: pilih pekerjaan dan penghasilan.', page:'bpu',
