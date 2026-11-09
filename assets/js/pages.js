@@ -612,7 +612,7 @@
   /* ---------- cara bayar iuran (data: KONTEN.bayarIuran) — tampil di simulasi.html#bayar-iuran ---------- */
   function bayarHtml(){
     var B = K.bayarIuran; if(!B || !(B.langkah || []).length) return '';
-    var dir = (SH.base || '') + 'assets/img/tutorial/', n = B.langkah.length;
+    var dir = (SH.base || '') + 'assets/tutorial/', n = B.langkah.length;
     var qrisAt = B.langkah.map(function(l){ return !!l.qris; }).indexOf(true);
     function shot(src, alt){
       return '<a class="pb-shot" href="' + esc(dir + src) + '" target="_blank" rel="noopener" aria-label="Perbesar gambar: ' + esc(alt) + '">' +
