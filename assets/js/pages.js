@@ -609,6 +609,90 @@
   /* =================================================================
      SIMULASI (hub)
      ================================================================= */
+  /* ---------- cara bayar iuran (data: KONTEN.bayarIuran) — tampil di simulasi.html#bayar-iuran ---------- */
+  function bayarHtml(){
+    var B = K.bayarIuran; if(!B || !(B.langkah || []).length) return '';
+    var dir = (SH.base || '') + 'assets/img/tutorial/', n = B.langkah.length;
+    var qrisAt = B.langkah.map(function(l){ return !!l.qris; }).indexOf(true);
+    function shot(src, alt){
+      return '<a class="pb-shot" href="' + esc(dir + src) + '" target="_blank" rel="noopener" aria-label="Perbesar gambar: ' + esc(alt) + '">' +
+        '<img src="' + esc(dir + src) + '" alt="' + esc(alt) + '" loading="lazy" decoding="async" width="560" height="700"></a>';
+    }
+    var dots = B.langkah.map(function(l, i){ return '<button type="button" class="pb-dot' + (l.qris ? ' is-qris' : '') + '" data-pb-go="' + i + '" aria-label="Langkah ' + (i + 1) + ': ' + esc(l.judul) + '"></button>'; }).join('');
+    return '<section class="sh-section sh-anchor pb" id="bayar-iuran" aria-labelledby="pbTitle">' +
+      sectionHead(B.judul, esc(B.ringkas), null, 'pbTitle') +
+      '<div class="sh-card is-accent pb-intro">' +
+        '<div class="pb-qris"><span class="pb-qris-badge">QRIS</span><div><strong>Cara paling mudah: bayar dengan QRIS</strong>' +
+          '<small>Satu kode QR bisa dibayar dari hampir semua aplikasi mobile banking dan e-wallet. Langkah ' + (qrisAt + 1) + '–' + n + ' di bawah.</small></div></div>' +
+        '<h3 class="sh-h3">Siapkan</h3>' + checklist(B.siapkan) +
+        '<details class="sh-disclosure pb-kode"><summary>Format kode iuran per segmen</summary><div class="sh-disclosure-body">' +
+          '<div class="sh-table-wrap"><table class="sh-table"><thead><tr><th>Segmen</th><th>Kode iuran</th></tr></thead><tbody>' +
+          (B.kode || []).map(function(k){ return '<tr><td>' + esc(k.segmen) + '</td><td>' + esc(k.format) + '<br><code>' + esc(k.contoh) + '</code></td></tr>'; }).join('') +
+          '</tbody></table></div>' +
+          '<p class="sh-sub" style="margin:10px 0 0">Belum tahu kode iuran Anda? <button type="button" class="sh-linkbtn" data-sh-konsul="Cara bayar iuran: menanyakan kode iuran">Konsultasi Langsung</button> atau datangi kantor cabang.</p>' +
+        '</div></details>' +
+        '<div class="sh-btn-row"><a class="sh-btn is-primary"' + SH.aAttrs(B.kanal) + '>' + I('wallet', 'sm') + esc(B.kanal.label) + ' ' + I('external', 'xs') + '</a></div>' +
+      '</div>' +
+      '<div class="pb-stepper" data-fab-avoid>' +
+        '<div class="pb-bar"><span class="pb-count" aria-live="polite">Langkah <b data-pb-now>1</b> dari ' + n + '</span>' +
+          '<span class="pb-nav"><button type="button" class="pb-arrow" data-pb-dir="-1" aria-label="Langkah sebelumnya">' + I('back', 'sm') + '</button>' +
+          '<button type="button" class="pb-arrow" data-pb-dir="1" aria-label="Langkah berikutnya">' + I('arrow', 'sm') + '</button></span></div>' +
+        '<ol class="pb-track" tabindex="0" aria-label="Langkah pembayaran, geser ke samping">' + B.langkah.map(function(l, i){
+          return '<li class="pb-step' + (l.qris ? ' is-qris' : '') + '">' +
+            shot(l.gambar, 'Langkah ' + (i + 1) + ': ' + l.judul) +
+            '<div class="pb-text"><div class="pb-num"><span>' + (i + 1) + '</span>' + (l.qris ? '<em>QRIS</em>' : '') + '</div>' +
+            '<h3>' + esc(l.judul) + '</h3><p>' + esc(l.teks) + '</p></div></li>';
+        }).join('') + '</ol>' +
+        '<div class="pb-dots">' + dots + '</div>' +
+      '</div>' +
+      ((B.tipsQris || []).length ? '<div class="sh-card pb-tips"><h3 class="sh-h3">' + I('sparkle', 'sm') + 'Tips bayar dengan QRIS</h3>' + bullets(B.tipsQris) + '</div>' : '') +
+      (B.metodeLain ? '<details class="sh-disclosure pb-lain"><summary>Metode lain: mobile banking, internet banking, bank</summary><div class="sh-disclosure-body pb-lain-body">' +
+          shot(B.metodeLain.gambar, 'Pilihan metode pembayaran lain') +
+          '<div><p style="margin-top:0">' + esc(B.metodeLain.teks) + '</p>' +
+          (B.metodeLain.grup || []).map(function(g){ return '<p class="pb-grup"><strong>' + esc(g.judul) + '</strong><span>' + esc(g.isi) + '</span></p>'; }).join('') +
+          (B.metodeLain.catatan ? '<p class="sh-sub">' + esc(B.metodeLain.catatan) + '</p>' : '') + '</div>' +
+        '</div></details>' : '') +
+      (B.keamanan ? SH.safe(esc(B.keamanan)) : '') +
+      '<div class="sh-block-head" style="margin-top:6px">' + SH.statusBadge(B.status, B.diperiksa) + '</div>' +
+      SH.sourceHtml(B.sumber) +
+    '</section>';
+  }
+  function bayarInit(root){
+    var sec = root.querySelector('#bayar-iuran'); if(!sec) return;
+    var track = sec.querySelector('.pb-track'), items = [].slice.call(track.children);
+    var dots = [].slice.call(sec.querySelectorAll('.pb-dot')), now = sec.querySelector('[data-pb-now]');
+    var prev = sec.querySelector('[data-pb-dir="-1"]'), next = sec.querySelector('[data-pb-dir="1"]');
+    function cur(){
+      var x = track.scrollLeft, best = 0, d = 1e9;
+      items.forEach(function(it, i){ var dd = Math.abs(it.offsetLeft - track.offsetLeft - x); if(dd < d){ d = dd; best = i; } });
+      return best;
+    }
+    function go(i){
+      i = Math.max(0, Math.min(items.length - 1, i));
+      track.scrollTo({ left:items[i].offsetLeft - track.offsetLeft, behavior:'smooth' });
+    }
+    function sync(){
+      var i = cur(), end = track.scrollLeft + track.clientWidth >= track.scrollWidth - 4;
+      var vis = Math.max(1, Math.floor((track.clientWidth + 12) / ((items[0].offsetWidth || 1) + 12)));
+      if(end) i = Math.max(i, items.length - vis);
+      now.textContent = vis > 1 ? (i + 1) + '–' + Math.min(items.length, i + vis) : (i + 1);
+      dots.forEach(function(d, k){ d.classList.toggle('is-on', k === i); d.setAttribute('aria-current', k === i ? 'step' : 'false'); });
+      prev.disabled = track.scrollLeft <= 4; next.disabled = end;
+    }
+    var t; track.addEventListener('scroll', function(){ clearTimeout(t); t = setTimeout(sync, 60); }, { passive:true });
+    sec.addEventListener('click', function(e){
+      var a = e.target.closest('[data-pb-dir]'); if(a){ go(cur() + (+a.getAttribute('data-pb-dir'))); return; }
+      var g = e.target.closest('[data-pb-go]'); if(g) go(+g.getAttribute('data-pb-go'));
+    });
+    track.addEventListener('keydown', function(e){
+      if(e.key === 'ArrowRight'){ e.preventDefault(); go(cur() + 1); }
+      if(e.key === 'ArrowLeft'){ e.preventDefault(); go(cur() - 1); }
+    });
+    window.addEventListener('resize', sync);
+    if(SH.fabAvoid) SH.fabAvoid(sec);   // tombol Konsultasi mengambang menyingkir saat langkah tampil
+    sync();
+  }
+
   R.simulasi = function(app){
     var S = K.simulasi || {}, segs = S.segmen || [], P = S.pertanyaan || { opsi:[] }, by = {};
     segs.forEach(function(s){ by[s.id] = s; });
@@ -623,14 +707,17 @@
               '<small>' + esc(s.untuk) + '</small><small class="ex">Contoh: ' + esc(s.contoh) + '</small>' +
               '<span class="go">Mulai hitung ' + I('arrow', 'xs') + '</span></span></a>';
         }).join('') + '</div>' +
-        '<p class="sh-sub" style="margin-top:10px">Ingin memahami segmennya dulu? <a href="' + SH.url('segmen') + '">Kenali segmen peserta</a>.</p></section>' +
+        '<p class="sh-sub" style="margin-top:10px">Ingin memahami segmennya dulu? <a href="' + SH.url('segmen') + '">Kenali segmen peserta</a>.' +
+          (K.bayarIuran ? ' Sudah tahu iurannya? <a href="#bayar-iuran">Cara bayar iuran (QRIS)</a>.' : '') + '</p></section>' +
       '<section class="sh-section" id="cari" aria-labelledby="simCari">' + sectionHead('Belum yakin? Cari dari usaha atau pekerjaan', 'Contoh: <b>bengkel las</b> (perusahaan), <b>ojol</b> (pekerja mandiri), <b>kontraktor</b> (jasa konstruksi), <b>TKI</b> (pekerja migran).', null, 'simCari') +
         '<div id="simSearchWrap"><form class="sh-search" id="simSearch" role="search" action="' + SH.url('simulasi') + '" method="get">' + I('search') +
           '<label class="sh-sr" for="simInput">Cari jenis usaha atau pekerjaan</label>' +
           '<input id="simInput" name="q" type="search" autocomplete="off" enterkeyhint="search" placeholder="Ketik jenis usaha atau pekerjaan…"><button type="submit" class="sh-go">Cari</button></form>' +
         '<div id="simResults" aria-live="polite"></div></div></section>' +
+      bayarHtml() +
       noteBox('<strong>Catatan:</strong> hasil simulasi adalah perkiraan untuk membantu persiapan. Besaran resmi mengikuti ketentuan dan tagihan dari kanal resmi. Dasar hukum tiap simulator ada di halaman <a href="' + SH.url('peraturan') + '">Peraturan</a>.');
     if(SH.initSiteSearch) SH.initSiteSearch({ form:'simSearch', input:'simInput', results:'simResults', root:document.getElementById('simSearchWrap') });
+    bayarInit(app);
   };
 
   /* =================================================================
